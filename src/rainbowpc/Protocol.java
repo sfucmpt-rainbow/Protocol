@@ -29,6 +29,10 @@ public class Protocol {
 	}		
 
 	public Protocol(Socket socket) throws IOException {
+		this.initBuffers(socket);
+	}
+
+	protected void initBuffers(Socket socket) throws IOException {
 		this.socket = socket;
 		this.instream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		this.outstream = new PrintWriter(socket.getOutputStream(), true);
