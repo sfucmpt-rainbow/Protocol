@@ -11,12 +11,14 @@ import java.io.IOException;
 import rainbowpc.Message;
 
 public class Protocol {
-	private static int DEFAULT_PORT = 7001;
+	private final static int DEFAULT_PORT = 7001;
+
+	public final static boolean WAIT = true;
 
 	private Socket socket = null;
 	private BufferedReader instream = null;
 	private PrintWriter outstream = null;
-	private Gson translator = new Gson();
+	protected Gson translator = new Gson();
 
 	public Protocol(String host) throws IOException {
 		this(host, DEFAULT_PORT);
@@ -38,8 +40,7 @@ public class Protocol {
 
 	protected String sendMessage(Message msg, boolean waitForResponse) throws IOException {
 		String result = null;
-		String encoded = translator.toJson(msg);
-		outstream.println(encoded);
+		outstream.println(msg.jsonEncode());
 		if (waitForResponse) {
 			result = instream.readLine();
 		}
