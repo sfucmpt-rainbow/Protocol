@@ -11,10 +11,20 @@ import java.io.IOException;
 import rainbowpc.Message;
 
 public class Protocol {
+	private static int DEFAULT_PORT = 7001;
+
 	private Socket socket = null;
 	private BufferedReader instream = null;
 	private PrintWriter outstream = null;
 	private Gson translator = new Gson();
+
+	public Protocol(String host) throws IOException {
+		this(host, DEFAULT_PORT);
+	}
+
+	public Protocol(String host, int port) throws IOException {
+		this(new Socket(host, port));
+	}		
 
 	public Protocol(Socket socket) throws IOException {
 		this.socket = socket;
@@ -34,5 +44,16 @@ public class Protocol {
 			result = instream.readLine();
 		}
 		return result;
+	}
+
+	public void shutdown() {
+		try {
+			this.instream.close();
+			this.outstream.close();
+			this.socket.close();
+		}
+		catch (IOException e) {
+			// do nothing
+		}
 	}
 }
