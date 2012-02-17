@@ -7,7 +7,7 @@ SRCFILES=`find ./src -name *.java`
 
 all:
 	@mkdir -p $(BINDIR);
-	@$(JAVAC) -cp $(GSONJAR) $(SRCFILES) -d $(BINDIR)
+	@$(JAVAC) -Xlint:unchecked -cp $(GSONJAR) $(SRCFILES) -d $(BINDIR) 
 
 install:
 	@echo

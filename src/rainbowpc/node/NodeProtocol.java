@@ -25,6 +25,9 @@ public class NodeProtocol extends Protocol {
 		this.register();
 	}
 
+	/////////////////////////////////////////////////////////////////
+	// Bootstrapping code
+	//
 	private String register() throws IOException, RainbowException {
 		String response = this.sendMessage(new RegisterMessage(), Protocol.WAIT);
 		ControllerListMessage result = translator.fromJson(response, ControllerListMessage.class);
