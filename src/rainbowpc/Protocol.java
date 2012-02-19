@@ -149,7 +149,7 @@ public abstract class Protocol implements Runnable {
 		return this.socket.isConnected();
 	}
 
-	private class Header {
+	protected class Header {
 		private byte version;
 		private String method;
 		public Header(String rawHeader) {
