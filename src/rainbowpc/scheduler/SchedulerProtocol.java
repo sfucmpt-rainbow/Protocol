@@ -10,16 +10,27 @@ import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.net.ServerSocket;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class SchedulerProtocol extends Protocol {
+	private static final int DEFAULT_PORT = 7001;
 	// This is an externally initialized queue
-	static final ConcurrentLinkedQueue<SchedulerMessage> sharedQueue = new ConcurrentLinkedQueue<SchedulerMessage>();
+	private final ConcurrentLinkedQueue<SchedulerMessage> sharedQueue = new ConcurrentLinkedQueue<SchedulerMessage>();
+	private final TreeSet<Protocolet> handlers = new TreeSet<Protocolet>();
+
+	private ServerSocket greeter;
 
 	// Scheduler is unique in the sense that it doesn't make connections,
 	// a socket must be passed to the rpc handler.
 	public SchedulerProtocol() throws IOException {
+		this(DEFAULT_PORT);
+	}
+
+	public SchedulerProtocol(int port) throws IOException {
+		greeter = new ServerSocket(port);
 	}
 
 	protected void initRpcMap() {
@@ -38,18 +49,35 @@ public class SchedulerProtocol extends Protocol {
 
 		public RegisterReplyMessage(String id) {
 			this.id = id;
+			
+		}
+	}
+
+	@Override
+	public void run() {
+		while (true) {
+			try {
+				Socket socket = greeter.accept();
+				Protocolet handler = new Protocolet(socket, sharedQueue);
+				handlers.add(handler);
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+			catch (RainbowException e) {
+			}
 		}
 	}
 	
 	@Override
 	public boolean isAlive() {
-		return true;
+		return greeter.isBound();
 	}
 
 	///////////////////////////////////////////////////////////
 	// Microprotocol to handle incoming connections
 	//
-	private class Protocolet implements Runnable {
+	private class Protocolet implements Runnable, Comparable<Protocolet> {
 		private String id;
 		private Socket socket;
 		private BufferedReader instream;
@@ -92,6 +120,10 @@ public class SchedulerProtocol extends Protocol {
 		}
 
 		public void run() {
+		}
+
+		public int compareTo(Protocolet second) {
+			return id.compareTo(second.id);
 		}
 
 		public void shutdown() {
