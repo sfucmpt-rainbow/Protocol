@@ -143,6 +143,10 @@ public abstract class Protocol implements Runnable {
 		}
 	}
 
+	public boolean isAlive() {
+		return this.socket.isConnected();
+	}
+
 	private class Header {
 		private byte version;
 		private String method;
