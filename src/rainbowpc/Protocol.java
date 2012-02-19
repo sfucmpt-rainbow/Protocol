@@ -1,19 +1,19 @@
 package rainbowpc;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 import java.net.Socket;
-import java.util.concurrent.Semaphore;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import rainbowpc.Message;
 
-public class Protocol implements Runnable {
+public abstract class Protocol implements Runnable {
 	///////////////////////////////////////////////////////////
 	// Constant Defines
 	//
@@ -34,33 +34,33 @@ public class Protocol implements Runnable {
 	protected Socket socket = null;             
 	protected BufferedReader instream = null;
 	protected PrintWriter outstream = null;
-	protected Gson translator = new Gson(); 
 	protected ConcurrentLinkedQueue<Message> messageQueue = new ConcurrentLinkedQueue<Message>();
-	protected final Semaphore queueLock = new Semaphore(MUTEX);
-	
+	protected static final Gson translator = new Gson(); 
+
 	/**
 	  * RPC mapping
 	  */
-	protected static final Map<String, Class> rpcMap;
-	static {
-		Map<String, Class> builder = new HashMap<String, Class>();
-		rpcMap = Collections.unmodifiableMap(builder);
-	}
+	protected Map<String, RpcAction> rpcMap;
 
 	///////////////////////////////////////////////////////////
 	// Constructors
 	//
 	public Protocol(String host) throws IOException {
 		this(host, DEFAULT_PORT);
+		initRpcMap();
 	}
 
 	public Protocol(String host, int port) throws IOException {
 		this(new Socket(host, port));
+		initRpcMap();
 	}		
 
 	public Protocol(Socket socket) throws IOException {
 		this.initBuffers(socket);
+		initRpcMap();
 	}
+
+	protected abstract void initRpcMap();
 
 	///////////////////////////////////////////////////////////
 	// Constructor helpers
@@ -80,9 +80,9 @@ public class Protocol implements Runnable {
 				Header header = new Header(instream.readLine());
 				String data = instream.readLine();
 				if (header.isAcceptedVersion()) {
-					Class messageType = rpcMap.get(header.getMethod());
-					if (messageType != null) {
-						queueMessage(data, messageType);
+					RpcAction rpcAction = rpcMap.get(header.getMethod());
+					if (rpcAction != null) {
+						rpcAction.run(data);
 					}
 				}
 				// else packet is dropped
@@ -98,13 +98,13 @@ public class Protocol implements Runnable {
 	///////////////////////////////////////////////////////////
 	// Message handling methods
 	//
-	protected String sendMessage(Message msg) throws IOException {
-		return this.sendMessage(msg, false);
+	protected String sendMessage(String method, Message msg) throws IOException {
+		return this.sendMessage(method, msg, false);
 	}
 
-	protected String sendMessage(Message msg, boolean waitForResponse) throws IOException {
+	protected String sendMessage(String method, Message msg, boolean waitForResponse) throws IOException {
 		String result = null;
-		String payload = buildPayload(VERSION, msg.getType(), msg.jsonEncode());
+		String payload = buildPayload(VERSION, method, translator.toJson(msg));
 		outstream.println(payload);
 		if (waitForResponse) {
 			result = instream.readLine();
@@ -112,16 +112,21 @@ public class Protocol implements Runnable {
 		return result;
 	}
 
+	// I don't think we'll need this but I'd rather not allow arbitrary Object encoding.
+	// if you must send a non-defined message type, you MUST create a JsonElement yourself!
+	protected String sendMessage(String method, JsonElement json) throws IOException {
+		String result = null;
+		String payload = buildPayload(VERSION, method, translator.toJson(json));
+		outstream.println(payload);
+		return result;
+	}
+
 	protected String buildPayload(int version, String methodType, String data) {
 		return version + "|" + methodType + "\n" + data;
 	}
 
-	@SuppressWarnings("unchecked")
-	private void queueMessage(String rawJson, Class type) {
-		Object msg = translator.fromJson(rawJson, type);
-		if (msg instanceof Message) {
-			messageQueue.add((Message)msg);
-		}
+	protected void queueMessage(Message msg) {
+		messageQueue.add(msg);
 	}
 	
 	///////////////////////////////////////////////////////////
