@@ -45,6 +45,8 @@ public abstract class Protocol implements Runnable {
 	///////////////////////////////////////////////////////////
 	// Constructors
 	//
+	public Protocol() {}          // default constructor, do nothing
+
 	public Protocol(String host) throws IOException {
 		this(host, DEFAULT_PORT);
 		initRpcMap();
