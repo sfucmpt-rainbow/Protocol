@@ -111,15 +111,7 @@ public abstract class Protocol implements Runnable {
 	public void run() {
 		while(true) {
 			try {
-				Header header = new Header(instream.readLine());
-				String data = instream.readLine();
-				if (header.isAcceptedVersion()) {
-					RpcAction rpcAction = rpcMap.get(header.getMethod());
-					if (rpcAction != null) {
-						rpcAction.run(data);
-					}
-				}
-				// else packet is dropped
+				receiveMessage();
 			}
 			catch (IOException e) {
 				e.printStackTrace();
@@ -129,21 +121,50 @@ public abstract class Protocol implements Runnable {
 		}
 	}
 
+	private void receiveMessage() throws IOException {
+		Header header = new Header(instream.readLine());
+		String data = instream.readLine();
+		log("A message has been received");
+		if (header.isAcceptedVersion()) {
+			parseMessage(header, data);
+		}
+		else {
+			log("Message dropped due to invalid header version");
+		}
+	}
+
+	private void parseMessage(Header header, String data) {
+		log("Message has been accepted");
+		RpcAction rpcAction = rpcMap.get(header.getMethod());
+		if (rpcAction != null) {
+			rpcAction.run(data);
+		}
+		else {
+			warn("Undefined rpc action for " + 
+				header.getMethod() + 
+				" in class " + 
+				this.getClass().getName()
+			);
+		}
+	}
+
 	///////////////////////////////////////////////////////////
 	// Message handling methods
 	//
-	protected String sendMessage(String method, Message msg) throws IOException {
-		return this.sendMessage(method, msg, false);
-	}
-
-	protected String sendMessage(String method, Message msg, boolean waitForResponse) throws IOException {
-		String result = null;
+	protected void sendMessage(String method, Message msg) throws IOException {
 		String payload = buildPayload(VERSION, method, translator.toJson(msg));
 		outstream.println(payload);
-		if (waitForResponse) {
-			result = instream.readLine();
+	}
+
+	public Message getMessage() {
+		if (hasMessages()) {
+			return messageQueue.poll();
 		}
-		return result;
+		return null;
+	}
+
+	public boolean hasMessages() {
+		return !messageQueue.isEmpty();
 	}
 
 	// I don't think we'll need this but I'd rather not allow arbitrary Object encoding.
@@ -199,6 +220,11 @@ public abstract class Protocol implements Runnable {
 		}
 	}
 	public interface Protocolet extends Runnable, Comparable<Protocolet> {
+		public void sendMessage(Message msg);
+		public Message getMessage();
+		
+		public int queueSize();
+		
 		/*private String id;
 		private Socket socket;
 		private BufferedReader instream;

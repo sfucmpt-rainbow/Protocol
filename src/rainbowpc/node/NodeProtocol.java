@@ -14,19 +14,17 @@ import rainbowpc.RpcAction;
 public class NodeProtocol extends Protocol {
 	private final static int DEFAULT_CONTROL_PORT = 7001;
 
-	private String id;
-
 	public NodeProtocol(String host) throws IOException, RainbowException {
 		super(host);
-		this.id = register();
+		register();
 	}
 	public NodeProtocol(String host, int port) throws IOException, RainbowException {
 		super(host, port);
-		this.id = register();
+		register();
 	}
 	public NodeProtocol(Socket socket) throws IOException, RainbowException {
 		super(socket);
-		this.id = register();
+		register();
 	}
 
 	protected void initRpcMap() {
@@ -34,6 +32,11 @@ public class NodeProtocol extends Protocol {
 		rpcMap.put("workOrder", new RpcAction() {
 			public void action(String jsonRaw) {
 				queueMessage(translator.fromJson(jsonRaw, WorkMessage.class));
+			}
+		});
+		rpcMap.put("bootstrap", new RpcAction() {
+			public void action(String jsonRaw) {
+				queueMessage(translator.fromJson(jsonRaw, BootstrapMessage.class));
 			}
 		});
 	}
@@ -67,16 +70,8 @@ public class NodeProtocol extends Protocol {
 	//	}
 	//	return null;
 	//}
-	private String register() throws IOException, RainbowException {
-		String id = sendMessage("register", new RegisterMessage(), Protocol.WAIT);
-		if (this.id == null) {
-			try {
-				this.shutdown();    // attempt graceful shutdown, but don't worry if it fails
-			} 
-			catch (Exception e) {}
-			throw new RainbowException("No id received from controller, shutting down...");
-		}
-		return id;
+	private void register() throws IOException, RainbowException {
+		sendMessage("register", new RegisterMessage());
 	}
 
 	//////////////////////////////////////////////////////////////
@@ -97,14 +92,9 @@ public class NodeProtocol extends Protocol {
 	//////////////////////////////////////////////////////////////
 	// Response/Incoming messages
 	//
-	private class ControllerListMessage extends NodeMessage {
-		public ArrayList<String> controllers;
-		public ControllerListMessage() {}
-	}
-
-	private class RegisterResponse extends NodeMessage {
+	private class BootstrapMessage extends NodeMessage {
 		public String id;
 		public boolean accepted;
-		public RegisterResponse() {}
+		public BootstrapMessage() {}
 	}
 }
