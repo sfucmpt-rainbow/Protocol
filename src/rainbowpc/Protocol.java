@@ -6,12 +6,17 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
 import java.net.Socket;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import rainbowpc.Message;
+import rainbowpc.RainbowFormatter;
 
 public abstract class Protocol implements Runnable {
 	///////////////////////////////////////////////////////////
@@ -35,6 +40,7 @@ public abstract class Protocol implements Runnable {
 	protected BufferedReader instream = null;
 	protected PrintWriter outstream = null;
 	protected ConcurrentLinkedQueue<Message> messageQueue = new ConcurrentLinkedQueue<Message>();
+	protected Logger logger = Logger.getLogger(this.getClass().getSimpleName());
 	protected static final Gson translator = new Gson(); 
 
 	/**
@@ -45,21 +51,27 @@ public abstract class Protocol implements Runnable {
 	///////////////////////////////////////////////////////////
 	// Constructors
 	//
-	public Protocol() {}          // default constructor, do nothing
+	public Protocol() throws IOException {
+		this((Socket)null);
+	}          // default constructor, do nothing
 
 	public Protocol(String host) throws IOException {
 		this(host, DEFAULT_PORT);
-		initRpcMap();
 	}
 
 	public Protocol(String host, int port) throws IOException {
 		this(new Socket(host, port));
-		initRpcMap();
 	}		
 
 	public Protocol(Socket socket) throws IOException {
-		this.initBuffers(socket);
+		initLogger();
+		log("Protocol booting...");
+
+		if (socket != null) 
+			this.initBuffers(socket);
+
 		initRpcMap();
+		log("Protocol finished booting!");
 	}
 
 	protected abstract void initRpcMap();
@@ -71,6 +83,26 @@ public abstract class Protocol implements Runnable {
 		this.socket = socket;
 		this.instream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		this.outstream = new PrintWriter(socket.getOutputStream(), true);
+	}
+
+	private void initLogger() {
+		for (Handler handler : logger.getParent().getHandlers()) {
+			logger.getParent().removeHandler(handler);
+		}
+		ConsoleHandler consoleHandle = new ConsoleHandler();
+		consoleHandle.setFormatter(new RainbowFormatter());
+		logger.addHandler(consoleHandle);
+	}
+
+	///////////////////////////////////////////////////////////
+	// Object class helpers
+	//
+	protected void log(String msg) {
+		logger.info(msg);
+	}
+
+	protected void warn(String msg) {
+		logger.warning(msg);
 	}
 
 	///////////////////////////////////////////////////////////
@@ -165,5 +197,65 @@ public abstract class Protocol implements Runnable {
 		public String getMethod() {
 			return method;
 		}
+	}
+	public interface Protocolet extends Runnable, Comparable<Protocolet> {
+		/*private String id;
+		private Socket socket;
+		private BufferedReader instream;
+		private PrintWriter ostream;
+		private ConcurrentLinkedQueue<Message> sharedQueue;
+		
+		// bootstrap
+		public Protocolet(Socket socket, ConcurrentLinkedQueue<Message> sharedQueue) throws RainbowException {
+			this.sharedQueue = sharedQueue;
+			this.socket = socket;
+			
+			try {
+				initBuffers(socket);
+				// failed bootstrap condition
+				if (!bootstrapController()) {
+					throw new RainbowException("Failed to bootstrap with node " + id);
+				}
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+				throw new RainbowException("Failed to bootstrap controller " + id);
+			}
+		}
+	
+		private void initBuffers(Socket socket) throws IOException {
+			instream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			ostream = new PrintWriter(socket.getOutputStream(), true);
+		}
+	
+		private boolean bootstrapController() throws IOException {
+			Header header = new Header(instream.readLine());
+			JsonElement data = translator.fromJson(instream.readLine(), JsonElement.class);
+			boolean bootstrapped = false;
+			if (header.isAcceptedVersion()) {
+				id = socket.getInetAddress().toString();
+				sendMessage("register", new RegisterReplyMessage(id));
+				bootstrapped = true;
+			}
+			return bootstrapped;
+		}
+	
+		public void run() {
+		}
+	
+		public int compareTo(Protocolet second) {
+			return id.compareTo(second.id);
+		}
+	
+		public void shutdown() {
+			try {
+				instream.close();
+				ostream.close();
+				socket.close();
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+		}*/
 	}
 }
