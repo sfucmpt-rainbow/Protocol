@@ -62,6 +62,7 @@ public class SchedulerProtocol extends Protocol {
 		while (!terminated) {
 			try {
 				Socket socket = greeter.accept();
+				log("Accepted new client");
 				//Protocolet handler = new Protocolet(socket, sharedQueue);
 				//handlers.add(handler);
 			}

@@ -164,6 +164,20 @@ public abstract class Protocol implements Runnable {
 		return null;
 	}
 
+	public synchronized Message blockingGetMessage() {
+		Message result = null;
+		while (result == null) {
+			while (!hasMessages()) {
+				try {
+					wait();
+				}
+				catch (InterruptedException e) {}
+			}
+			result = getMessage();
+		}
+		return result;
+	}
+
 	public boolean hasMessages() {
 		return !messageQueue.isEmpty();
 	}
