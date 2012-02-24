@@ -37,6 +37,7 @@ public abstract class Protocol implements Runnable {
 	  * the socket and input/output buffers.
 	  */
 	protected boolean terminated = false;
+	protected boolean exited = false;
 	protected Socket socket = null;             
 	protected BufferedReader instream = null;
 	protected PrintWriter outstream = null;
@@ -120,6 +121,7 @@ public abstract class Protocol implements Runnable {
 				shutdown();
 			}
 		}
+		log("Protocol successfully ended");
 	}
 
 	private void receiveMessage() throws IOException {
@@ -152,7 +154,7 @@ public abstract class Protocol implements Runnable {
 	///////////////////////////////////////////////////////////
 	// Message handling methods
 	//
-	protected void sendMessage(String method, Message msg) throws IOException {
+	public void sendMessage(String method, Message msg) throws IOException {
 		String payload = buildPayload(VERSION, method, translator.toJson(msg));
 		outstream.println(payload);
 	}
@@ -203,6 +205,7 @@ public abstract class Protocol implements Runnable {
 	// Connection handling methods
 	//
 	public void shutdown() {
+		log("Shutting down...");
 		try {
 			this.instream.close();
 			this.outstream.close();
@@ -212,10 +215,15 @@ public abstract class Protocol implements Runnable {
 			// do nothing
 		}
 		terminated = true;
+		log("Terminated");
 	}
 
 	public boolean isAlive() {
-		return this.socket.isConnected();
+		return !terminated && socket.isConnected();
+	}
+	
+	public synchronized boolean hasExited() {
+		return exited;
 	}
 
 	protected class Header {

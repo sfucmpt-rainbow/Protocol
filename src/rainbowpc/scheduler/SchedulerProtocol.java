@@ -13,6 +13,7 @@ import java.io.PrintWriter;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.net.ServerSocket;
+import java.net.SocketException;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Logger;
@@ -66,17 +67,56 @@ public class SchedulerProtocol extends Protocol {
 				//Protocolet handler = new Protocolet(socket, sharedQueue);
 				//handlers.add(handler);
 			}
+			catch (SocketException e) {}
 			catch (IOException e) {
 				e.printStackTrace();
 			}
 			//catch (RainbowException e) {
 			//}
 		}
+		exited = true;
+		log("Protocol succesfully ended");
 	}
 	
 	@Override
 	public boolean isAlive() {
-		return greeter.isBound();
+		return !terminated && greeter.isBound();
+	}
+
+	@Override
+	public void shutdown() {
+		log("Shutting down...");
+		try {
+			greeter.close();
+		}
+		catch (IOException e) {}
+		terminated = true;
+		log("Terminated");
+	}
+
+	@Override
+	public Message getMessage() {
+		return sharedQueue.poll();
+	}
+
+	@Override 
+	public synchronized Message blockingGetMessage() {
+		Message result = null;
+		while (result == null) {
+			while (!hasMessages()) {
+				try {
+					wait();
+				}
+				catch (InterruptedException e) {}
+			}
+			result = getMessage();
+		}
+		return result;
+	}
+
+	@Override
+	public void sendMessage(String method, Message msg) throws IOException {
+		throw new IOException("Scheduler not connected to any server");
 	}
 
 	public static void main(String[] args) throws IOException {
