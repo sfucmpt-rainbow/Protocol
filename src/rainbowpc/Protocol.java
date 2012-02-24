@@ -128,7 +128,7 @@ public abstract class Protocol implements Runnable {
 		Header header = new Header(instream.readLine());
 		String data = instream.readLine();
 		log("A message has been received");
-		if (header.isAcceptedVersion()) {
+		if (header.isAcceptedHeader()) {
 			parseMessage(header, data);
 		}
 		else {
@@ -229,14 +229,22 @@ public abstract class Protocol implements Runnable {
 	protected class Header {
 		private byte version;
 		private String method;
+		private boolean deformed = false;
+
 		public Header(String rawHeader) {
-			String[] tuple = rawHeader.split("|");
-			version = Byte.parseByte(tuple[0]);
-			method = tuple[1];
+			log("Parsing header " + rawHeader);
+			try {
+				String[] tuple = rawHeader.split("\\|");
+				version = Byte.parseByte(tuple[0]);
+				method = tuple[1];
+			}
+			catch (Exception e) {
+				deformed = true;
+			}
 		}
 		
-		public boolean isAcceptedVersion() {
-			return version <= VERSION;
+		public boolean isAcceptedHeader() {
+			return !deformed && version <= VERSION;
 		}
 
 		public String getMethod() {

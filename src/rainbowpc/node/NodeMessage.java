@@ -4,6 +4,10 @@ import rainbowpc.Message;
 
 public abstract class NodeMessage extends Message {
 	NodeMessage() {
-		this.type = "node";
+		super();
+	}
+
+	protected void setType() {
+		type = "node";
 	}
 }

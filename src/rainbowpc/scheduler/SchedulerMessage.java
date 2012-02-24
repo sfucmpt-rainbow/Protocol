@@ -4,6 +4,10 @@ import rainbowpc.Message;
 
 public abstract class SchedulerMessage extends Message {
 	public SchedulerMessage() {
-		this.type = "scheduler";
+		super();
+	}
+	
+	protected void setType() {
+		type = "scheduler";
 	}
 }

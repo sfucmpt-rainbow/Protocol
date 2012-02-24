@@ -6,6 +6,7 @@ import rainbowpc.RpcAction;
 import rainbowpc.RainbowException;
 import rainbowpc.scheduler.SchedulerMessage;
 import rainbowpc.Message;
+import rainbowpc.controller.ControllerBootstrapMessage;
 import com.google.gson.JsonElement;
 import java.io.IOException;
 import java.io.BufferedReader;
@@ -64,8 +65,9 @@ public class SchedulerProtocol extends Protocol {
 			try {
 				Socket socket = greeter.accept();
 				log("Accepted new client");
-				//Protocolet handler = new Protocolet(socket, sharedQueue);
-				//handlers.add(handler);
+				Protocolet handler = new SchedulerProtocolet(socket, sharedQueue);
+				handlers.add(handler);
+				new Thread(handler).run();
 			}
 			catch (SocketException e) {}
 			catch (IOException e) {
@@ -131,8 +133,15 @@ public class SchedulerProtocol extends Protocol {
 		private PrintWriter ostream;
 		private ConcurrentLinkedQueue<SchedulerMessage> sharedQueue;
 
-		public SchedulerProtocolet(Socket socket) throws IOException {
+		public SchedulerProtocolet(
+			Socket socket,
+			ConcurrentLinkedQueue<SchedulerMessage> sharedQueue
+		) throws IOException {
 			super(socket);
+			id = socket.getInetAddress().getHostAddress();
+			log("Handler spawned for " + id);
+			sendMessage("bootstrap", new ControllerBootstrapMessage(id));
+			log("Bootstrap message sent");
 		}
 
 		@Override
