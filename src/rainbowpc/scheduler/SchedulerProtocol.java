@@ -23,19 +23,26 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class SchedulerProtocol extends Protocol {
 	private static final int DEFAULT_PORT = 7001;
+	private static final int DEFAULT_BLOCKSIZE = 1000000; //1M
 	// This is an externally initialized queue
 	private final ConcurrentLinkedQueue<SchedulerMessage> sharedQueue = new ConcurrentLinkedQueue<SchedulerMessage>();
 	private final TreeSet<Protocolet> handlers = new TreeSet<Protocolet>();
 
 	private ServerSocket greeter;
+	private int blockSize;
 
 	// Scheduler is unique in the sense that it doesn't make connections,
 	// a socket must be passed to the rpc handler.
 	public SchedulerProtocol() throws IOException {
 		this(DEFAULT_PORT);
 	}
-
+	
 	public SchedulerProtocol(int port) throws IOException {
+		this(port, DEFAULT_BLOCKSIZE);
+	}
+
+	public SchedulerProtocol(int port, int blockSize) throws IOException {
+		this.blockSize = blockSize;
 		greeter = new ServerSocket(port);
 	}
 
@@ -146,6 +153,12 @@ public class SchedulerProtocol extends Protocol {
 
 		@Override
 		protected void initRpcMap() {
+			rpcMap = new TreeMap<String, RpcAction>();
+			rpcMap.put("workBlockSetup", new RpcAction() {
+				public void action(String rawJson) {
+					log("Received new work block setup request");
+				}
+			});
 		}
 	
 		@Override
