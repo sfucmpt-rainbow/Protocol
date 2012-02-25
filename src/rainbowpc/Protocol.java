@@ -176,7 +176,9 @@ public abstract class Protocol implements Runnable {
 			return null;
 		}
 	}
-
+        public Message getBlockingMessage() throws InterruptedException{
+            return messageQueue.take();
+        }
 	public boolean hasMessages() {
 		return !messageQueue.isEmpty();
 	}
