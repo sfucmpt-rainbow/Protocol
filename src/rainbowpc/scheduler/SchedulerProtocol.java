@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 import java.net.ServerSocket;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Logger;
@@ -24,6 +25,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class SchedulerProtocol extends Protocol {
 	private static final int DEFAULT_PORT = 7001;
 	private static final int DEFAULT_BLOCKSIZE = 1000000; //1M
+	private static final int SOCKET_BLOCK_MILLIS = 1000;
 	// This is an externally initialized queue
 	private final ConcurrentLinkedQueue<SchedulerMessage> sharedQueue = new ConcurrentLinkedQueue<SchedulerMessage>();
 	private final TreeSet<Protocolet> handlers = new TreeSet<Protocolet>();
@@ -44,6 +46,7 @@ public class SchedulerProtocol extends Protocol {
 	public SchedulerProtocol(int port, int blockSize) throws IOException {
 		this.blockSize = blockSize;
 		greeter = new ServerSocket(port);
+		greeter.setSoTimeout(SOCKET_BLOCK_MILLIS); 
 	}
 
 	protected void initRpcMap() {
@@ -76,7 +79,10 @@ public class SchedulerProtocol extends Protocol {
 				handlers.add(handler);
 				new Thread(handler).run();
 			}
-			catch (SocketException e) {}
+			catch (SocketTimeoutException e) {}
+			catch (SocketException e) {
+				shutdown();
+			}
 			catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -101,26 +107,6 @@ public class SchedulerProtocol extends Protocol {
 		catch (IOException e) {}
 		terminated = true;
 		log("Terminated");
-	}
-
-	@Override
-	public Message getMessage() {
-		return sharedQueue.poll();
-	}
-
-	@Override 
-	public synchronized Message blockingGetMessage() {
-		Message result = null;
-		while (result == null) {
-			while (!hasMessages()) {
-				try {
-					wait();
-				}
-				catch (InterruptedException e) {}
-			}
-			result = getMessage();
-		}
-		return result;
 	}
 
 	@Override

@@ -23,6 +23,10 @@ public class SchedulerServer {
 						handle.interrupt();
 						System.out.println("Waiting...");
 						retries++;
+						try {
+							Thread.sleep(1000);
+						}
+						catch (InterruptedException e){}
 					}
 					if (retries < 5) 
 						System.out.println("Graceful shutdown completed!");
@@ -31,7 +35,7 @@ public class SchedulerServer {
 				}	
 			});
 			while (true) {
-				protocol.blockingGetMessage();
+				protocol.getMessage();
 			}
 		}
 		catch (IOException e) {

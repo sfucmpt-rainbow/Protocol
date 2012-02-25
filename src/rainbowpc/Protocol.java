@@ -2,7 +2,7 @@ package rainbowpc;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
@@ -11,6 +11,8 @@ import java.util.logging.Level;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.InputStreamReader;
@@ -26,6 +28,7 @@ public abstract class Protocol implements Runnable {
 	private static final int DEFAULT_PORT = 7001;
 	private static final byte MUTEX = 1;
 	private static final byte VERSION = 1;
+	private static final int SOCKET_BLOCK_MILLIS = 1000; // 1 sec
 	/** External */
 	public final static boolean WAIT = true;
 
@@ -41,7 +44,7 @@ public abstract class Protocol implements Runnable {
 	protected Socket socket = null;             
 	protected BufferedReader instream = null;
 	protected PrintWriter outstream = null;
-	protected ConcurrentLinkedQueue<Message> messageQueue = new ConcurrentLinkedQueue<Message>();
+	protected LinkedBlockingQueue<Message> messageQueue = new LinkedBlockingQueue<Message>();
 	protected Logger logger = Logger.getLogger(this.getClass().getSimpleName());
 	protected static final Gson translator = new Gson(); 
 
@@ -85,6 +88,7 @@ public abstract class Protocol implements Runnable {
 		this.socket = socket;
 		this.instream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		this.outstream = new PrintWriter(socket.getOutputStream(), true);
+		//this.socket.setSoTimeout(SOCKET_BLOCK_MILLIS);
 	}
 
 	private void initLogger() {
@@ -115,6 +119,10 @@ public abstract class Protocol implements Runnable {
 			try {
 				receiveMessage();
 			}
+			catch (SocketTimeoutException e) {}
+			catch (SocketException e) {
+				shutdown();
+			}
 			catch (IOException e) {
 				e.printStackTrace();
 				System.out.println("I/O exception occured in protocol, shutting down.");
@@ -124,7 +132,7 @@ public abstract class Protocol implements Runnable {
 		log("Protocol successfully ended");
 	}
 
-	private void receiveMessage() throws IOException {
+	private void receiveMessage() throws IOException, SocketTimeoutException {
 		Header header = new Header(instream.readLine());
 		String data = instream.readLine();
 		log("A message has been received");
@@ -160,24 +168,13 @@ public abstract class Protocol implements Runnable {
 	}
 
 	public Message getMessage() {
-		if (hasMessages()) {
-			return messageQueue.poll();
+		try {
+			return messageQueue.take();
 		}
-		return null;
-	}
-
-	public synchronized Message blockingGetMessage() {
-		Message result = null;
-		while (result == null) {
-			while (!hasMessages()) {
-				try {
-					wait();
-				}
-				catch (InterruptedException e) {}
-			}
-			result = getMessage();
+		catch (InterruptedException e) {
+			Thread.currentThread().interrupted();
+			return null;
 		}
-		return result;
 	}
 
 	public boolean hasMessages() {
@@ -189,12 +186,13 @@ public abstract class Protocol implements Runnable {
 	protected String sendMessage(String method, JsonElement json) throws IOException {
 		String result = null;
 		String payload = buildPayload(VERSION, method, translator.toJson(json));
-		outstream.println(payload);
+		outstream.print(payload);
 		return result;
 	}
 
 	protected String buildPayload(int version, String methodType, String data) {
-		return version + "|" + methodType + "\n" + data;
+		return version + "|" + methodType + "\n" + 
+				data + "\n";
 	}
 
 	protected void queueMessage(Message msg) {
