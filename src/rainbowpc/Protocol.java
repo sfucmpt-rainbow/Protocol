@@ -133,7 +133,12 @@ public abstract class Protocol implements Runnable {
 	}
 
 	private void receiveMessage() throws IOException, SocketTimeoutException {
-		Header header = new Header(instream.readLine());
+                String line = instream.readLine();
+                if(line == null){
+                    throw new IOException("readLine was null, end of stream");
+                }
+		Header header = new Header(line);
+                
 		String data = instream.readLine();
 		log("A message has been received");
 		if (header.isAcceptedHeader()) {
