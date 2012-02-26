@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import rainbowpc.Message;
 import rainbowpc.Protocol;
 import rainbowpc.RpcAction;
-import rainbowpc.controller.ControllerBootstrapMessage;
+import rainbowpc.controller.messages.ControllerBootstrapMessage;
 
 public class SchedulerProtocolet extends Protocol implements Protocol.Protocolet {
 

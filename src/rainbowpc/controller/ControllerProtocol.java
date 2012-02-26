@@ -1,5 +1,6 @@
 package rainbowpc.controller;
 
+import rainbowpc.controller.messages.ControllerBootstrapMessage;
 import rainbowpc.Protocol;
 import rainbowpc.Message;
 import rainbowpc.RpcAction;

@@ -1,5 +1,6 @@
 package rainbowpc.sample;
 
+import rainbowpc.controller.messages.ControllerBootstrapMessage;
 import rainbowpc.Message;
 import rainbowpc.Protocol;
 import rainbowpc.controller.*;
