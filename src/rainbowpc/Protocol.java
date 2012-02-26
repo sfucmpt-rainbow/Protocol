@@ -41,7 +41,7 @@ public abstract class Protocol implements Runnable {
 	  */
 	protected boolean terminated = false;
 	protected boolean exited = false;
-	protected Socket socket = null;             
+	protected Socket socket = null;	     
 	protected BufferedReader instream = null;
 	protected PrintWriter outstream = null;
 	protected LinkedBlockingQueue<Message> messageQueue = new LinkedBlockingQueue<Message>();
@@ -58,7 +58,7 @@ public abstract class Protocol implements Runnable {
 	//
 	public Protocol() throws IOException {
 		this((Socket)null);
-	}          // default constructor, do nothing
+	}	  // default constructor, do nothing
 
 	public Protocol(String host) throws IOException {
 		this(host, DEFAULT_PORT);
@@ -135,12 +135,12 @@ public abstract class Protocol implements Runnable {
 	}
 
 	private void receiveMessage() throws IOException, SocketTimeoutException {
-                String line = instream.readLine();
-                if(line == null){
-                    throw new SocketException("readLine was null, end of stream for socket reached");
-                }
+		String line = instream.readLine();
+		if(line == null){
+		    throw new SocketException("readLine was null, end of stream for socket reached");
+		}
 		Header header = new Header(line);
-                
+		
 		String data = instream.readLine();
 		log("A message has been received");
 		if (header.isAcceptedHeader()) {
@@ -169,23 +169,25 @@ public abstract class Protocol implements Runnable {
 	///////////////////////////////////////////////////////////
 	// Message handling methods
 	//
-	public void sendMessage(String method, Message msg) throws IOException {
-		String payload = buildPayload(VERSION, method, translator.toJson(msg));
+	public void sendMessage(Message msg) throws IOException {
+		String payload = buildPayload(VERSION, msg.getMethod(), translator.toJson(msg));
 		outstream.println(payload);
 	}
 
 	public Message getMessage() throws InterruptedException{
-                return messageQueue.take();
+		return messageQueue.take();
 	}
-        public Message pollMessage(){
-                try{
-                        return messageQueue.take();
-                }
-                catch (InterruptedException e) {
-                        Thread.currentThread().interrupted();
-                        return null;
-                }
-        }
+
+	public Message pollMessage(){
+		try{
+			return messageQueue.take();
+		}
+		catch (InterruptedException e) {
+			Thread.currentThread().interrupted();
+			return null;
+		}
+	}
+
 	public boolean hasMessages() {
 		return !messageQueue.isEmpty();
 	}
@@ -214,11 +216,11 @@ public abstract class Protocol implements Runnable {
 	public void shutdown() {
 		log("Shutting down...");
 		try {
-			this.instream.close();
-			this.outstream.close();
+			//this.instream.close();
+			//this.outstream.close();
 			this.socket.close();
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			// do nothing
 		}
 		terminated = true;
@@ -264,7 +266,7 @@ public abstract class Protocol implements Runnable {
 		}
 	}
 	public interface Protocolet extends Runnable, Comparable<Protocolet> {
-		public void sendMessage(String method, Message msg) throws IOException;
+		public void sendMessage(Message msg) throws IOException;
 		public Message getMessage() throws InterruptedException;
 		
 		public int queueSize();

@@ -3,9 +3,11 @@ package rainbowpc.controller;
 import rainbowpc.controller.ControllerMessage;
 
 public class WorkBlockSetup extends ControllerMessage {
+	public static final String LABEL = "workBlockSetup";
 	private int blockSize;
 
 	public WorkBlockSetup(int blockSize) {
+		super(LABEL);
 		this.blockSize = blockSize;
 	}
 
