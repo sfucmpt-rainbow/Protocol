@@ -172,17 +172,17 @@ public abstract class Protocol implements Runnable {
 		outstream.println(payload);
 	}
 
-	public Message getMessage() {
-		try {
-			return messageQueue.take();
-		}
-		catch (InterruptedException e) {
-			Thread.currentThread().interrupted();
-			return null;
-		}
+	public Message getMessage() throws InterruptedException{
+                return messageQueue.take();
 	}
-        public Message getBlockingMessage() throws InterruptedException{
-            return messageQueue.take();
+        public Message pollMessage(){
+                try{
+                        return messageQueue.take();
+                }
+                catch (InterruptedException e) {
+                        Thread.currentThread().interrupted();
+                        return null;
+                }
         }
 	public boolean hasMessages() {
 		return !messageQueue.isEmpty();
@@ -258,7 +258,7 @@ public abstract class Protocol implements Runnable {
 	}
 	public interface Protocolet extends Runnable, Comparable<Protocolet> {
 		public void sendMessage(String method, Message msg) throws IOException;
-		public Message getMessage();
+		public Message getMessage() throws InterruptedException;
 		
 		public int queueSize();
 		
