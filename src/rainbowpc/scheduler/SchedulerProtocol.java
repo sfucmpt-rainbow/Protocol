@@ -132,7 +132,7 @@ public class SchedulerProtocol extends Protocol {
 		) throws IOException {
 			super(socket);
 			id = generateIdBySocket(socket);
-			initLogger(id);
+			initLogger();
 			log("Handler spawned for " + id);
 			sendMessage("bootstrap", new ControllerBootstrapMessage(id));
 			log("Bootstrap message sent");
@@ -151,6 +151,16 @@ public class SchedulerProtocol extends Protocol {
 		@Override
 		protected void shutdownCallable() {	
 			removeControllerHandle(this.id);
+		}
+
+		@Override
+		protected void log(String msg) {
+			logger.info("(" + (id != null? id : "new node")  + ") " + msg);
+		}
+
+		@Override
+		protected void warn(String msg) {
+			logger.warning("(" + (id != null? id : "new node") + ") " + msg);
 		}
 
 		/*
