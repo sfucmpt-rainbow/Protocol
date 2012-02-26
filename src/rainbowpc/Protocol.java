@@ -91,13 +91,15 @@ public abstract class Protocol implements Runnable {
 		//this.socket.setSoTimeout(SOCKET_BLOCK_MILLIS);
 	}
 
-	private void initLogger() {
+	protected void initLogger() {
+		logger = Logger.getLogger(this.getClass().getSimpleName());
 		for (Handler handler : logger.getParent().getHandlers()) {
 			logger.getParent().removeHandler(handler);
 		}
 		ConsoleHandler consoleHandle = new ConsoleHandler();
 		consoleHandle.setFormatter(new RainbowFormatter());
-		logger.addHandler(consoleHandle);
+		if (logger.getHandlers().length < 1) 
+			logger.addHandler(consoleHandle);
 	}
 
 	///////////////////////////////////////////////////////////
@@ -193,13 +195,13 @@ public abstract class Protocol implements Runnable {
 	protected String sendMessage(String method, JsonElement json) throws IOException {
 		String result = null;
 		String payload = buildPayload(VERSION, method, translator.toJson(json));
-		outstream.print(payload);
+		outstream.println(payload);
 		return result;
 	}
 
 	protected String buildPayload(int version, String methodType, String data) {
 		return version + "|" + methodType + "\n" + 
-				data + "\n";
+				data;
 	}
 
 	protected void queueMessage(Message msg) {
@@ -220,7 +222,12 @@ public abstract class Protocol implements Runnable {
 			// do nothing
 		}
 		terminated = true;
+		shutdownCallable();
 		log("Terminated");
+	}
+	
+	// allows for override hook
+	protected void shutdownCallable() {
 	}
 
 	public boolean isAlive() {
@@ -263,5 +270,7 @@ public abstract class Protocol implements Runnable {
 		public int queueSize();
 		
 		public String getId();
+		
+		public String toString();
 	}
 }
