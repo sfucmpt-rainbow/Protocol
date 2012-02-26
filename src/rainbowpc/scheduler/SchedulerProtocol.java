@@ -2,7 +2,6 @@ package rainbowpc.scheduler;
 
 import rainbowpc.Protocol;
 import rainbowpc.Protocol.Protocolet;
-import rainbowpc.RpcAction;
 import rainbowpc.Message;
 import java.io.IOException;
 import java.net.Socket;
@@ -11,7 +10,6 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import rainbowpc.scheduler.messages.RegisterReplyMessage;
 
 public class SchedulerProtocol extends Protocol {
 
@@ -40,16 +38,11 @@ public class SchedulerProtocol extends Protocol {
 		greeter.setSoTimeout(SOCKET_BLOCK_MILLIS);
 	}
 
+	/*
+	 * Unused since everything is handed in protocolets
+	 */
 	protected void initRpcMap() {
-		rpcMap = new TreeMap<String, RpcAction>();
-
-		rpcMap.put(RegisterReplyMessage.LABEL, new RpcAction() {
-
-			public void action(String rawJson) {
-				//assignedControllerId = socket.getInetAddress().toString();
-				//safeSendMessage("register", new RegisterReplyMessage(assignedControllerId));			
-			}
-		});
+		//rpcMap = new TreeMap<String, RpcAction>();
 	}
 
 	
