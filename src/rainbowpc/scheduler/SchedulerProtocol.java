@@ -193,7 +193,7 @@ public class SchedulerProtocol extends Protocol {
 		}
 
 		private String generateIdBySocket(Socket socket) {
-			return "controller-" + socket.getPort();
+			return "controller-" + socket.getInetAddress() + ":" + socket.getPort();
 		}
 
 		public String toString() {
