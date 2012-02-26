@@ -133,7 +133,12 @@ public abstract class Protocol implements Runnable {
 	}
 
 	private void receiveMessage() throws IOException, SocketTimeoutException {
-		Header header = new Header(instream.readLine());
+                String line = instream.readLine();
+                if(line == null){
+                    throw new SocketException("readLine was null, end of stream for socket reached");
+                }
+		Header header = new Header(line);
+                
 		String data = instream.readLine();
 		log("A message has been received");
 		if (header.isAcceptedHeader()) {
@@ -167,16 +172,18 @@ public abstract class Protocol implements Runnable {
 		outstream.println(payload);
 	}
 
-	public Message getMessage() {
-		try {
-			return messageQueue.take();
-		}
-		catch (InterruptedException e) {
-			Thread.currentThread().interrupted();
-			return null;
-		}
+	public Message getMessage() throws InterruptedException{
+                return messageQueue.take();
 	}
-
+        public Message pollMessage(){
+                try{
+                        return messageQueue.take();
+                }
+                catch (InterruptedException e) {
+                        Thread.currentThread().interrupted();
+                        return null;
+                }
+        }
 	public boolean hasMessages() {
 		return !messageQueue.isEmpty();
 	}
@@ -251,7 +258,7 @@ public abstract class Protocol implements Runnable {
 	}
 	public interface Protocolet extends Runnable, Comparable<Protocolet> {
 		public void sendMessage(String method, Message msg) throws IOException;
-		public Message getMessage();
+		public Message getMessage() throws InterruptedException;
 		
 		public int queueSize();
 		
