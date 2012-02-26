@@ -11,6 +11,7 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import rainbowpc.scheduler.messages.RegisterReplyMessage;
 
 public class SchedulerProtocol extends Protocol {
 
@@ -51,16 +52,7 @@ public class SchedulerProtocol extends Protocol {
 		});
 	}
 
-	private class RegisterReplyMessage extends SchedulerMessage {
-
-		public static final String LABEL = "registerReply";
-		String id;
-
-		public RegisterReplyMessage(String id) {
-			super(LABEL);
-			this.id = id;
-		}
-	}
+	
 
 	@Override
 	public void run() {
