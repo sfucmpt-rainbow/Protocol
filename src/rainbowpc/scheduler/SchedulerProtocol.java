@@ -28,7 +28,7 @@ public class SchedulerProtocol extends Protocol {
 	private static final int SOCKET_BLOCK_MILLIS = 1000;
 	// This is an externally initialized queue
 	private final ConcurrentLinkedQueue<SchedulerMessage> sharedQueue = new ConcurrentLinkedQueue<SchedulerMessage>();
-	private final TreeSet<Protocolet> handlers = new TreeSet<Protocolet>();
+	private final TreeMap<String, Protocolet> handlers = new TreeMap<String, Protocolet>();
 
 	private ServerSocket greeter;
 	private int blockSize;
@@ -76,7 +76,7 @@ public class SchedulerProtocol extends Protocol {
 				Socket socket = greeter.accept();
 				log("Accepted new client");
 				Protocolet handler = new SchedulerProtocolet(socket, sharedQueue);
-				handlers.add(handler);
+				handlers.put(handler.getId(), handler);  // blargh, java...
 				new Thread(handler).run();
 			}
 			catch (SocketTimeoutException e) {}
@@ -92,7 +92,11 @@ public class SchedulerProtocol extends Protocol {
 		exited = true;
 		log("Protocol succesfully ended");
 	}
-	
+
+	public Protocolet removeControllerHandle(String id) {
+		return handlers.remove(id);
+	}
+
 	@Override
 	public boolean isAlive() {
 		return !terminated && greeter.isBound();
@@ -128,6 +132,7 @@ public class SchedulerProtocol extends Protocol {
 		) throws IOException {
 			super(socket);
 			id = generateIdBySocket(socket);
+			initLogger(id);
 			log("Handler spawned for " + id);
 			sendMessage("bootstrap", new ControllerBootstrapMessage(id));
 			log("Bootstrap message sent");
@@ -142,14 +147,19 @@ public class SchedulerProtocol extends Protocol {
 				}
 			});
 		}
+		
+		@Override
+		protected void shutdownCallable() {	
+			removeControllerHandle(this.id);
+		}
 
-                /*
-                 * Needs this apparently or else java gives an error
-                 */
-                @Override
-                public Message getMessage() throws InterruptedException {
-                    return super.getMessage();
-                }
+		/*
+		 * Needs this apparently or else java gives an error
+		 */
+		@Override
+		public Message getMessage() throws InterruptedException {
+		    return super.getMessage();
+		}
 	
 		@Override
 		public String getId() {
@@ -173,6 +183,10 @@ public class SchedulerProtocol extends Protocol {
 
 		private String generateIdBySocket(Socket socket) {
 			return "controller-" + socket.getPort();
+		}
+
+		public String toString() {
+			return getId();
 		}
 	}
 }

@@ -45,7 +45,7 @@ public abstract class Protocol implements Runnable {
 	protected BufferedReader instream = null;
 	protected PrintWriter outstream = null;
 	protected LinkedBlockingQueue<Message> messageQueue = new LinkedBlockingQueue<Message>();
-	protected Logger logger = Logger.getLogger(this.getClass().getSimpleName());
+	protected Logger logger = null;
 	protected static final Gson translator = new Gson(); 
 
 	/**
@@ -69,7 +69,7 @@ public abstract class Protocol implements Runnable {
 	}		
 
 	public Protocol(Socket socket) throws IOException {
-		initLogger();
+		initLogger(this.getClass().getSimpleName());
 		log("Protocol booting...");
 
 		if (socket != null) 
@@ -91,7 +91,8 @@ public abstract class Protocol implements Runnable {
 		//this.socket.setSoTimeout(SOCKET_BLOCK_MILLIS);
 	}
 
-	private void initLogger() {
+	protected void initLogger(String id) {
+		logger = Logger.getLogger(id);
 		for (Handler handler : logger.getParent().getHandlers()) {
 			logger.getParent().removeHandler(handler);
 		}
@@ -220,7 +221,12 @@ public abstract class Protocol implements Runnable {
 			// do nothing
 		}
 		terminated = true;
+		shutdownCallable();
 		log("Terminated");
+	}
+	
+	// allows for override hook
+	protected void shutdownCallable() {
 	}
 
 	public boolean isAlive() {
@@ -263,5 +269,7 @@ public abstract class Protocol implements Runnable {
 		public int queueSize();
 		
 		public String getId();
+		
+		public String toString();
 	}
 }
