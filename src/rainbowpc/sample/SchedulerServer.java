@@ -35,7 +35,7 @@ public class SchedulerServer {
 				}	
 			});
 			while (true) {
-				protocol.getMessage();
+				protocol.pollMessage();
 			}
 		}
 		catch (IOException e) {

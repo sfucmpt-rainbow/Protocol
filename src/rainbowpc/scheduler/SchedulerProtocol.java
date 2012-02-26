@@ -142,6 +142,14 @@ public class SchedulerProtocol extends Protocol {
 				}
 			});
 		}
+
+                /*
+                 * Needs this apparently or else java gives an error
+                 */
+                @Override
+                public Message getMessage() throws InterruptedException {
+                    return super.getMessage();
+                }
 	
 		@Override
 		public String getId() {
