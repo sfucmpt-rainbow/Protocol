@@ -135,7 +135,7 @@ public abstract class Protocol implements Runnable {
 	private void receiveMessage() throws IOException, SocketTimeoutException {
                 String line = instream.readLine();
                 if(line == null){
-                    throw new IOException("readLine was null, end of stream");
+                    throw new SocketException("readLine was null, end of stream for socket reached");
                 }
 		Header header = new Header(line);
                 
