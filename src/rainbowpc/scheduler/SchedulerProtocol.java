@@ -52,7 +52,7 @@ public class SchedulerProtocol extends Protocol {
 	protected void initRpcMap() {
 		rpcMap = new TreeMap<String, RpcAction>();
 
-		rpcMap.put("register", new RpcAction() {
+		rpcMap.put(RegisterReplyMessage.LABEL, new RpcAction() {
 			public void action(String rawJson) {
 				//assignedControllerId = socket.getInetAddress().toString();
 				//safeSendMessage("register", new RegisterReplyMessage(assignedControllerId));			
@@ -61,11 +61,12 @@ public class SchedulerProtocol extends Protocol {
 	}
 
 	private class RegisterReplyMessage extends SchedulerMessage {
+		public static final String LABEL = "registerReply";
 		String id;
 
 		public RegisterReplyMessage(String id) {
+			super(LABEL);
 			this.id = id;
-			
 		}
 	}
 
@@ -114,7 +115,7 @@ public class SchedulerProtocol extends Protocol {
 	}
 
 	@Override
-	public void sendMessage(String method, Message msg) throws IOException {
+	public void sendMessage(Message msg) throws IOException {
 		throw new IOException("Scheduler not connected to any server");
 	}
 
@@ -134,7 +135,7 @@ public class SchedulerProtocol extends Protocol {
 			id = generateIdBySocket(socket);
 			initLogger();
 			log("Handler spawned for " + id);
-			sendMessage("bootstrap", new ControllerBootstrapMessage(id));
+			sendMessage(new ControllerBootstrapMessage(id));
 			log("Bootstrap message sent");
 		}
 
@@ -177,8 +178,8 @@ public class SchedulerProtocol extends Protocol {
 		}
 
 		@Override
-		public void sendMessage(String method, Message msg) throws IOException {
-			super.sendMessage(method, msg);
+		public void sendMessage(Message msg) throws IOException {
+			super.sendMessage(msg);
 		}
 
 		@Override

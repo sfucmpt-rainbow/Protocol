@@ -45,7 +45,7 @@ public class NodeProtocol extends Protocol {
 	// Bootstrapping code
 	//
 	private void register() throws IOException, RainbowException {
-		sendMessage("register", new RegisterMessage());
+		sendMessage(new RegisterMessage());
 	}
 
 	//////////////////////////////////////////////////////////////
@@ -56,9 +56,10 @@ public class NodeProtocol extends Protocol {
 	// Query/Outgoing messages
 	//
 	private class RegisterMessage extends NodeMessage {
+		public static final String LABEL = "register";
 		private int cores;
 		public RegisterMessage() {
-			super();
+			super(LABEL);
 			cores = Runtime.getRuntime().availableProcessors();
 		}
 	}
@@ -67,8 +68,11 @@ public class NodeProtocol extends Protocol {
 	// Response/Incoming messages
 	//
 	private class BootstrapMessage extends NodeMessage {
+		public static final String LABEL = "bootstrap";
 		public String id;
 		public boolean accepted;
-		public BootstrapMessage() {}
+		public BootstrapMessage() {
+			super(LABEL);
+		}
 	}
 }
