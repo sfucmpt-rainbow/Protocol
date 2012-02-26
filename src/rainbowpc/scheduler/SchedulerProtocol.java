@@ -114,10 +114,6 @@ public class SchedulerProtocol extends Protocol {
 		throw new IOException("Scheduler not connected to any server");
 	}
 
-	public static void main(String[] args) throws IOException {
-		SchedulerProtocol foo = new SchedulerProtocol();
-	}
-
 	private class SchedulerProtocolet extends Protocol implements Protocolet {	
 		String id;
 
@@ -131,7 +127,7 @@ public class SchedulerProtocol extends Protocol {
 			ConcurrentLinkedQueue<SchedulerMessage> sharedQueue
 		) throws IOException {
 			super(socket);
-			id = socket.getInetAddress().getHostAddress();
+			id = generateIdBySocket(socket);
 			log("Handler spawned for " + id);
 			sendMessage("bootstrap", new ControllerBootstrapMessage(id));
 			log("Bootstrap message sent");
@@ -165,6 +161,10 @@ public class SchedulerProtocol extends Protocol {
 		@Override
 		public int queueSize() {
 			return 0;
+		}
+
+		private String generateIdBySocket(Socket socket) {
+			return "controller-" + socket.getPort();
 		}
 	}
 }
