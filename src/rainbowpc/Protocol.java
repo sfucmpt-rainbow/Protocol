@@ -193,13 +193,13 @@ public abstract class Protocol implements Runnable {
 	protected String sendMessage(String method, JsonElement json) throws IOException {
 		String result = null;
 		String payload = buildPayload(VERSION, method, translator.toJson(json));
-		outstream.print(payload);
+		outstream.println(payload);
 		return result;
 	}
 
 	protected String buildPayload(int version, String methodType, String data) {
 		return version + "|" + methodType + "\n" + 
-				data + "\n";
+				data;
 	}
 
 	protected void queueMessage(Message msg) {
