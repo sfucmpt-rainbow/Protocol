@@ -11,6 +11,7 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import rainbowpc.scheduler.messages.NewControllerMessage;
 
 public class SchedulerProtocol extends Protocol {
 
@@ -53,8 +54,14 @@ public class SchedulerProtocol extends Protocol {
 			try {
 				Socket socket = greeter.accept();
 				log("Accepted new client");
-				Protocolet handler = new SchedulerProtocolet(socket, messageQueue, this);
-				handlers.put(handler.getId(), handler);  // blargh, java...
+				SchedulerProtocolet handler = new SchedulerProtocolet(socket, messageQueue, this);
+				handlers.put(handler.getId(), handler);  // blargh, java...				
+				/* Internal message to inform something listening on the queue that a new
+				 * controller has connected
+				 * Must be done here because a call to getControllerHandle should not return null
+				 * and adding this to the queue could cause it to call immediately afterwards
+				 */
+				messageQueue.add(new NewControllerMessage(handler.getId()));
 				new Thread(handler).run();
 			} catch (SocketTimeoutException e) {
 			} catch (SocketException e) {
@@ -68,7 +75,9 @@ public class SchedulerProtocol extends Protocol {
 		exited = true;
 		log("Protocol succesfully ended");
 	}
-
+	public Protocolet getControllerHandle(String id){
+		return handlers.get(id);
+	}
 	public Protocolet removeControllerHandle(String id) {
 		return handlers.remove(id);
 	}

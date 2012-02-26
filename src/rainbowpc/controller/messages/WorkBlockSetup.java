@@ -1,6 +1,4 @@
-package rainbowpc.controller;
-
-import rainbowpc.controller.ControllerMessage;
+package rainbowpc.controller.messages;
 
 public class WorkBlockSetup extends ControllerMessage {
 	public static final String LABEL = "workBlockSetup";
