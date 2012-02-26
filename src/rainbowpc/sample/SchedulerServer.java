@@ -7,12 +7,14 @@ import java.util.concurrent.Executor;
 
 public class SchedulerServer {
 	// simulates a scheduler server
+
 	public static void main(String[] args) {
 		try {
 			Executor executor = Executors.newSingleThreadExecutor();
 			final SchedulerProtocol protocol = new SchedulerProtocol();
 			executor.execute(protocol);
 			Runtime.getRuntime().addShutdownHook(new Thread() {
+
 				@Override
 				public void run() {
 					protocol.shutdown();
@@ -25,23 +27,29 @@ public class SchedulerServer {
 						retries++;
 						try {
 							Thread.sleep(1000);
+						} catch (InterruptedException e) {
 						}
-						catch (InterruptedException e){}
 					}
-					if (retries < 5) 
+					if (retries < 5) {
 						System.out.println("Graceful shutdown completed!");
-					else
+					} else {
 						System.out.println("Graceful shutdown failed, abort, abort!");
-				}	
+					}
+				}
 			});
 			while (true) {
-				protocol.pollMessage();
+				System.out.println("Hello world");
+				try {
+					System.out.println(protocol.getMessage());
+				} catch (InterruptedException ie) {
+					Thread.currentThread().interrupt();
+					break;
+				}
 			}
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			System.out.println("Failed to start protocol, aborting...");
 			System.exit(1);
 		}
-		
+
 	}
 }

@@ -1,5 +1,6 @@
 package rainbowpc.scheduler;
 
+import rainbowpc.scheduler.messages.SchedulerMessage;
 import rainbowpc.Protocol;
 import rainbowpc.Protocol.Protocolet;
 import rainbowpc.Message;
@@ -17,7 +18,6 @@ public class SchedulerProtocol extends Protocol {
 	private static final int DEFAULT_BLOCKSIZE = 1000000; //1M
 	private static final int SOCKET_BLOCK_MILLIS = 1000;
 	// This is an externally initialized queue
-	private final ConcurrentLinkedQueue<SchedulerMessage> sharedQueue = new ConcurrentLinkedQueue<SchedulerMessage>();
 	private final TreeMap<String, Protocolet> handlers = new TreeMap<String, Protocolet>();
 	private ServerSocket greeter;
 	private int blockSize;
@@ -53,7 +53,7 @@ public class SchedulerProtocol extends Protocol {
 			try {
 				Socket socket = greeter.accept();
 				log("Accepted new client");
-				Protocolet handler = new SchedulerProtocolet(socket, sharedQueue, this);
+				Protocolet handler = new SchedulerProtocolet(socket, messageQueue, this);
 				handlers.put(handler.getId(), handler);  // blargh, java...
 				new Thread(handler).run();
 			} catch (SocketTimeoutException e) {

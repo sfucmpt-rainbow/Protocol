@@ -1,15 +1,18 @@
 package rainbowpc.scheduler;
 
+import rainbowpc.scheduler.messages.SchedulerMessage;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import rainbowpc.Message;
 import rainbowpc.Protocol;
 import rainbowpc.RpcAction;
 import rainbowpc.controller.messages.ControllerBootstrapMessage;
+import rainbowpc.scheduler.messages.NewControllerMessage;
 
 public class SchedulerProtocolet extends Protocol implements Protocol.Protocolet {
 
@@ -17,12 +20,12 @@ public class SchedulerProtocolet extends Protocol implements Protocol.Protocolet
 	private Socket socket;
 	private BufferedReader instream;
 	private PrintWriter ostream;
-	private ConcurrentLinkedQueue<SchedulerMessage> sharedQueue;
+	private LinkedBlockingQueue<Message> sharedQueue;
 	private SchedulerProtocol schedulerProtocol;
 
 	public SchedulerProtocolet(
 			Socket socket,
-			ConcurrentLinkedQueue<SchedulerMessage> sharedQueue,
+			LinkedBlockingQueue<Message> sharedQueue,
 			SchedulerProtocol schedulerProtocol) throws IOException {
 		super(socket);
 		this.schedulerProtocol = schedulerProtocol;
@@ -31,6 +34,9 @@ public class SchedulerProtocolet extends Protocol implements Protocol.Protocolet
 		initLogger();
 		log("Handler spawned for " + id);
 		sendMessage(new ControllerBootstrapMessage(id));
+		// Internal message to inform something listening on the queue that a new
+		// controller has connected
+		sharedQueue.add(new NewControllerMessage(generateIdBySocket(socket)));
 		log("Bootstrap message sent");
 	}
 

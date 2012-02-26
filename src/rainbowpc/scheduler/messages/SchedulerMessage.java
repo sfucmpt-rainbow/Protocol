@@ -1,4 +1,4 @@
-package rainbowpc.scheduler;
+package rainbowpc.scheduler.messages;
 
 import rainbowpc.Message;
 
