@@ -49,20 +49,15 @@ public class SchedulerProtocolet extends Protocol implements Protocol.Protocolet
 	@Override
 	protected void initRpcMap() {
 		rpcMap = new TreeMap<String, RpcAction>();
+		// Is there a better way to do this?
+		// using this within an anonymous RpcAction refers to the rpc action
+		final SchedulerProtocolet instance = this;
 		rpcMap.put(WorkBlockComplete.LABEL, new RpcAction() {
 			@Override
 			public void action(String jsonRaw) {
-				sharedQueue.add(buildSchedulerMessage(jsonRaw, WorkBlockComplete.class));
+				sharedQueue.add(SchedulerMessage.createSchedulerMessage(jsonRaw, WorkBlockComplete.class, WorkBlockComplete.LABEL, instance));
 			}
 		});
-	}
-	/*
-	 * Identical to translator.fromJson but automatically adds the id in
-	 */
-	protected SchedulerMessage buildSchedulerMessage(String jsonRaw, Class c){
-		SchedulerMessage message = (SchedulerMessage)translator.fromJson(jsonRaw, c);
-		message.id = id;
-		return message;
 	}
 	@Override
 	protected void shutdownCallable() {

@@ -4,7 +4,7 @@
  */
 package rainbowpc.scheduler.messages;
 
-import rainbowpc.Message;
+import rainbowpc.scheduler.SchedulerProtocolet;
 
 /**
  *
@@ -14,7 +14,7 @@ public class NewControllerMessage extends SchedulerMessage {
 
 	public static final String LABEL = "newcontroller";
 
-	public NewControllerMessage(String id) {
-		super(LABEL, id);
+	public NewControllerMessage(SchedulerProtocolet protocolet) {
+		super(LABEL, protocolet);
 	}
 }

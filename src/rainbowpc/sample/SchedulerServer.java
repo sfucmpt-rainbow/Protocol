@@ -4,8 +4,6 @@ import rainbowpc.scheduler.*;
 import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Executor;
-import rainbowpc.Message;
-import rainbowpc.controller.messages.ControllerShutdownMessage;
 import rainbowpc.controller.messages.WorkBlockSetup;
 import rainbowpc.scheduler.messages.NewControllerMessage;
 import rainbowpc.scheduler.messages.SchedulerMessage;
@@ -70,25 +68,24 @@ public class SchedulerServer extends Thread {
 		while (true) {
 			try {
 				SchedulerMessage message = (SchedulerMessage) protocol.getMessage();
-				if (message instanceof NewControllerMessage) {
-					System.out.println("There is a new controller " + ((NewControllerMessage) message).id);
-					System.out.println("Sending random work packet");
-					try {
-						protocol.getControllerHandle(message.id).sendMessage(new WorkBlockSetup(12345));
-					} catch (IOException e) {
-						e.printStackTrace();
-						System.out.println("Could not send a work block to controller " + message.id);
-					}
-				} else if (message instanceof WorkBlockComplete) {
-					System.out.println("Work block is complete, telling remote to shutdown");
-					try {
-						protocol.getControllerHandle(message.id).sendMessage(new ControllerShutdownMessage());
-					} catch (IOException e) {
-						e.printStackTrace();
-						System.out.println("Could not send a ControllerShutdownMessage to controller " + message.id);
-					}
-				} else {
-					System.out.println("Unexpected message " + message);
+				switch (message.getMethod()) {
+					case NewControllerMessage.LABEL:
+						System.out.println("There is a new controller " + message.getID());
+						System.out.println("Sending random work packet");
+						try {
+							message.getSchedulerProtocolet().sendMessage(new WorkBlockSetup(12345));
+						} catch (IOException e) {
+							e.printStackTrace();
+							System.out.println("Could not send a work block to controller " + message.getID());
+						}
+						break;
+					case WorkBlockComplete.LABEL:
+						System.out.println("Work block is complete, telling remote to shutdown");
+						message.getSchedulerProtocolet().shutdown();
+						break;
+					default:
+						System.out.println("Unexpected message " + message);
+						break;
 				}
 			} catch (InterruptedException ie) {
 				Thread.currentThread().interrupt();

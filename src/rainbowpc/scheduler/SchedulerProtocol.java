@@ -61,7 +61,7 @@ public class SchedulerProtocol extends Protocol {
 				 * Must be done here because a call to getControllerHandle should not return null
 				 * and adding this to the queue could cause it to call immediately afterwards
 				 */
-				messageQueue.add(new NewControllerMessage(handler.getId()));
+				messageQueue.add(new NewControllerMessage(handler));
 				new Thread(handler).run();
 			} catch (SocketTimeoutException e) {
 			} catch (SocketException e) {

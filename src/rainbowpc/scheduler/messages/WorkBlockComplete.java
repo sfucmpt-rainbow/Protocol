@@ -8,12 +8,13 @@ package rainbowpc.scheduler.messages;
  *
  * @author WesleyLuk
  */
-public class WorkBlockComplete extends SchedulerMessage{
-	
+public class WorkBlockComplete extends SchedulerMessage {
+
 	public static final String LABEL = "workcomplete";
 	int blockSize;
-	public WorkBlockComplete(int blockSize) {
-		super(LABEL);
+
+	public WorkBlockComplete(String id, int blockSize) {
+		super(LABEL, id);
 		this.blockSize = blockSize;
 	}
 }
