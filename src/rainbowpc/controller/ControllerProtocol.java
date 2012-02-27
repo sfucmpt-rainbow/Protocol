@@ -1,6 +1,5 @@
 package rainbowpc.controller;
 
-import com.sun.xml.internal.messaging.saaj.soap.ver1_1.Message1_1Impl;
 import rainbowpc.controller.messages.ControllerBootstrapMessage;
 import rainbowpc.Protocol;
 import rainbowpc.RpcAction;
