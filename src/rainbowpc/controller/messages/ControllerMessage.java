@@ -1,4 +1,4 @@
-package rainbowpc.controller;
+package rainbowpc.controller.messages;
 
 import rainbowpc.Message;
 
