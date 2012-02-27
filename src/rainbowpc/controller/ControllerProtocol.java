@@ -1,20 +1,27 @@
 package rainbowpc.controller;
 
+import rainbowpc.controller.messages.ControllerBootstrapMessage;
 import rainbowpc.Protocol;
-import rainbowpc.Message;
 import rainbowpc.RpcAction;
-import rainbowpc.Protocol.Protocolet;
 import java.util.TreeMap;
 import java.io.IOException;
+import rainbowpc.Message;
+import rainbowpc.controller.messages.WorkBlockSetup;
 
 public class ControllerProtocol extends Protocol {
-	private static final int DEFAULT_SCHEDULER_PORT  = 7001;
+
+	private static final int DEFAULT_SCHEDULER_PORT = 7001;
 	private static final int DEFAULT_LISTEN_PORT = 7002;
-	
+	private String id;
+
+	public String getId() {
+		return id;
+	}
+
 	public ControllerProtocol(String schedulerHost) throws IOException {
 		this(schedulerHost, DEFAULT_SCHEDULER_PORT);
 	}
-	
+
 	public ControllerProtocol(String schedulerHost, int schedulerPort) throws IOException {
 		this(schedulerHost, schedulerPort, DEFAULT_LISTEN_PORT);
 	}
@@ -26,9 +33,23 @@ public class ControllerProtocol extends Protocol {
 	@Override
 	protected void initRpcMap() {
 		rpcMap = new TreeMap<String, RpcAction>();
-		rpcMap.put("bootstrap", new RpcAction() {
+		/*
+		 * Have to be careful and make sure we store the id that the scheduler
+		 * gives us
+		 */
+		rpcMap.put(ControllerBootstrapMessage.LABEL, new RpcAction() {
+
 			public void action(String rawJson) {
-				queueMessage(translator.fromJson(rawJson, ControllerBootstrapMessage.class));
+				ControllerBootstrapMessage bootstrap = Message.createMessage(rawJson, ControllerBootstrapMessage.class, ControllerBootstrapMessage.LABEL);
+				id = bootstrap.id;
+				queueMessage(bootstrap);
+			}
+		});
+		rpcMap.put(WorkBlockSetup.LABEL, new RpcAction() {
+
+			@Override
+			public void action(String rawJson) {
+				queueMessage(Message.createMessage(rawJson, WorkBlockSetup.class, WorkBlockSetup.LABEL));
 			}
 		});
 	}

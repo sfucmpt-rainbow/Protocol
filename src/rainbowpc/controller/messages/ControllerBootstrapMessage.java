@@ -1,4 +1,4 @@
-package rainbowpc.controller;
+package rainbowpc.controller.messages;
 
 public class ControllerBootstrapMessage extends ControllerMessage {
 	public static final String LABEL = "bootstrap";
