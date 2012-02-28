@@ -19,6 +19,7 @@ public abstract class SchedulerMessage extends Message {
 	 * class
 	 */
 
+	@SuppressWarnings("unchecked")
 	public static <T extends SchedulerMessage> T createSchedulerMessage(String rawJson, Class<T> messageClass, String method, SchedulerProtocolet sp) {
 		SchedulerMessage schedulerMessage = Message.createMessage(rawJson, messageClass, method);
 		schedulerMessage.setSchedulerProtocolet(sp);
