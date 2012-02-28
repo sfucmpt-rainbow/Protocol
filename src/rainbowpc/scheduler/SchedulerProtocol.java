@@ -62,11 +62,14 @@ public class SchedulerProtocol extends Protocol {
 				 * and adding this to the queue could cause it to call immediately afterwards
 				 */
 				messageQueue.add(new NewControllerMessage(handler));
-				new Thread(handler).run();
-			} catch (SocketTimeoutException e) {
-			} catch (SocketException e) {
+				new Thread(handler).start();
+			} 
+			catch (SocketTimeoutException e) {
+			} 
+			catch (SocketException e) {
 				shutdown();
-			} catch (IOException e) {
+			} 
+			catch (IOException e) {
 				e.printStackTrace();
 			}
 			//catch (RainbowException e) {
@@ -92,7 +95,8 @@ public class SchedulerProtocol extends Protocol {
 		log("Shutting down...");
 		try {
 			greeter.close();
-		} catch (IOException e) {
+		} 
+		catch (IOException e) {
 		}
 		terminated = true;
 		log("Terminated");
