@@ -71,10 +71,13 @@ public class SchedulerProtocol extends Protocol {
 			} 
 			catch (IOException e) {
 				e.printStackTrace();
+				shutdown();
 			}
 			//catch (RainbowException e) {
 			//}
 		}
+		log("Final size: " + handlers.size());
+		log("Queue size: " + messageQueue.size());
 		exited = true;
 		log("Protocol succesfully ended");
 	}
