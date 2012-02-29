@@ -3,6 +3,8 @@ package rainbowpc;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
@@ -45,8 +47,11 @@ public abstract class Protocol implements Runnable {
 	protected BufferedReader instream = null;
 	protected PrintWriter outstream = null;
 	protected LinkedBlockingQueue<Message> messageQueue = new LinkedBlockingQueue<Message>();
+	protected LinkedBlockingQueue<Message> outboundQueue = new LinkedBlockingQueue<Message>();
 	protected Logger logger = Logger.getLogger(this.getClass().getSimpleName());
 	protected static final Gson translator = new Gson(); 
+
+	private ExecutorService mailerExecutor = Executors.newSingleThreadExecutor();
 
 	/**
 	  * RPC mapping
@@ -72,8 +77,10 @@ public abstract class Protocol implements Runnable {
 		initLogger();
 		log("Protocol booting...");
 
-		if (socket != null) 
+		if (socket != null) {
 			this.initBuffers(socket);
+			mailerExecutor.execute(new Mailer(outstream, outboundQueue));
+		}
 
 		initRpcMap();
 		log("Protocol finished booting!");
@@ -170,8 +177,7 @@ public abstract class Protocol implements Runnable {
 	// Message handling methods
 	//
 	public void sendMessage(Message msg) throws IOException {
-		String payload = buildPayload(VERSION, msg.getMethod(), translator.toJson(msg));
-		outstream.println(payload);
+		outboundQueue.offer(msg);
 	}
 
 	public Message getMessage() throws InterruptedException{
@@ -192,19 +198,18 @@ public abstract class Protocol implements Runnable {
 		return !messageQueue.isEmpty();
 	}
 
+	/*
+	 * Deprecated, I don't think anybody will miss this
+	 */ 
 	// I don't think we'll need this but I'd rather not allow arbitrary Object encoding.
 	// if you must send a non-defined message type, you MUST create a JsonElement yourself!
-	protected String sendMessage(String method, JsonElement json) throws IOException {
+	/*protected String sendMessage(String method, JsonElement json) throws IOException {
 		String result = null;
 		String payload = buildPayload(VERSION, method, translator.toJson(json));
 		outstream.println(payload);
 		return result;
-	}
+	} */ 
 
-	protected String buildPayload(int version, String methodType, String data) {
-		return version + "|" + methodType + "\n" + 
-				data;
-	}
 
 	protected void queueMessage(Message msg) {
 		messageQueue.add(msg);
@@ -223,6 +228,8 @@ public abstract class Protocol implements Runnable {
 		catch (Exception e) {
 			// do nothing
 		}
+		// Attempt a graceful close
+		mailerExecutor.shutdownNow();
 		terminated = true;
 		shutdownCallable();
 		log("Terminated");
@@ -274,5 +281,44 @@ public abstract class Protocol implements Runnable {
 		public String getId();
 		
 		public String toString();
+	}
+
+	private class Mailer implements Runnable {
+		PrintWriter outstream;
+		LinkedBlockingQueue<Message> queue;
+
+		public Mailer(PrintWriter outstream, LinkedBlockingQueue<Message> queue) {
+			this.outstream = outstream;
+			this.queue = queue;
+		}
+
+		public void run() {
+			log("Mailer started");
+			while (!terminated) {
+				try {
+					mailMessage(queue.take());
+				}
+				catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+					break;
+				}
+			}		
+			log("Mailer killed");
+		}
+
+		protected String buildPayload(
+			int version, 
+			String methodType, 
+			String data
+		) {
+			return version + "|" + methodType + "\n" + 
+					data;
+		}
+
+
+		private void mailMessage(Message msg) {
+			String payload = buildPayload(VERSION, msg.getMethod(), translator.toJson(msg));
+			outstream.println(payload);
+		}
 	}
 }
