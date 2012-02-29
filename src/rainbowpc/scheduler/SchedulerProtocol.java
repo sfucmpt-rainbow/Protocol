@@ -76,8 +76,8 @@ public class SchedulerProtocol extends Protocol {
 			//catch (RainbowException e) {
 			//}
 		}
-		System.out.println("Final size: " + handlers.size());
-		System.out.println("Queue size: " + messageQueue.size());
+		log("Final size: " + handlers.size());
+		log("Queue size: " + messageQueue.size());
 		exited = true;
 		log("Protocol succesfully ended");
 	}
