@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
@@ -51,6 +51,8 @@ public abstract class Protocol implements Runnable {
 	protected Logger logger = Logger.getLogger(this.getClass().getSimpleName());
 	protected static final Gson translator = new Gson(); 
 
+	private ExecutorService mailerExecutor = Executors.newSingleThreadExecutor();
+
 	/**
 	  * RPC mapping
 	  */
@@ -75,8 +77,10 @@ public abstract class Protocol implements Runnable {
 		initLogger();
 		log("Protocol booting...");
 
-		if (socket != null) 
+		if (socket != null) {
 			this.initBuffers(socket);
+			mailerExecutor.execute(new Mailer(outstream, outboundQueue));
+		}
 
 		initRpcMap();
 		log("Protocol finished booting!");
@@ -224,6 +228,8 @@ public abstract class Protocol implements Runnable {
 		catch (Exception e) {
 			// do nothing
 		}
+		// Attempt a graceful close
+		mailerExecutor.shutdownNow();
 		terminated = true;
 		shutdownCallable();
 		log("Terminated");
@@ -287,9 +293,17 @@ public abstract class Protocol implements Runnable {
 		}
 
 		public void run() {
+			log("Mailer started");
 			while (!terminated) {
-				mailMessage(queue.take());
+				try {
+					mailMessage(queue.take());
+				}
+				catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+					break;
+				}
 			}		
+			log("Mailer killed");
 		}
 
 		protected String buildPayload(
