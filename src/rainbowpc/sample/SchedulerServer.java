@@ -5,7 +5,11 @@ import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Executor;
 import rainbowpc.controller.messages.WorkBlockSetup;
+import rainbowpc.scheduler.messages.CacheReady;
+import rainbowpc.scheduler.messages.CacheRelease;
+import rainbowpc.scheduler.messages.CacheRequest;
 import rainbowpc.scheduler.messages.NewControllerMessage;
+import rainbowpc.scheduler.messages.QueryFound;
 import rainbowpc.scheduler.messages.SchedulerMessage;
 import rainbowpc.scheduler.messages.WorkBlockComplete;
 
@@ -69,11 +73,17 @@ public class SchedulerServer extends Thread {
 			try {
 				SchedulerMessage message = (SchedulerMessage) protocol.getMessage();
 				switch (message.getMethod()) {
+					case CacheReady.LABEL:
+					case CacheRelease.LABEL:
+					case CacheRequest.LABEL:
+					case QueryFound.LABEL:
+						System.out.println("Got message " + message.getMethod());
+						break;
 					case NewControllerMessage.LABEL:
 						System.out.println("There is a new controller " + message.getID());
 						System.out.println("Sending random work packet");
 						try {
-							message.getSchedulerProtocolet().sendMessage(new WorkBlockSetup(12345));
+							message.getSchedulerProtocolet().sendMessage(new WorkBlockSetup(0,0,0));
 						} catch (IOException e) {
 							e.printStackTrace();
 							System.out.println("Could not send a work block to controller " + message.getID());
