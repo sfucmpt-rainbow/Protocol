@@ -7,7 +7,7 @@ import rainbowpc.controller.messages.NewQuery;
  * Controller reports to the scheduler that a match for a query has been found
  */
 public class QueryFound extends SchedulerMessage{
-	public static String LABEL = "queryFound";
+	public static final String LABEL = "queryFound";
 
 	/*
 	 * Hex encoded for maximum cross platform/language compatability and also 

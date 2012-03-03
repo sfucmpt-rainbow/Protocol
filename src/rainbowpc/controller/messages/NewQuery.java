@@ -7,7 +7,7 @@ package rainbowpc.controller.messages;
  * searched for
  */
 public class NewQuery extends ControllerMessage{
-	public static String LABEL = "newQuery";
+	public static final String LABEL = "newQuery";
 	
 	/*
 	 * Hex encoded for maximum cross platform/language compatability and also 

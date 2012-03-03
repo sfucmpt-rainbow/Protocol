@@ -6,7 +6,7 @@ import rainbowpc.controller.*;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import rainbowpc.controller.messages.WorkBlockSetup;
+import rainbowpc.controller.messages.*;
 import rainbowpc.scheduler.messages.WorkBlockComplete;
 
 public class ControllerServer extends Thread {
@@ -38,6 +38,12 @@ public class ControllerServer extends Thread {
 				message = protocol.getMessage();
 				System.out.println(message);
 				switch (message.getMethod()) {
+					case CacheRequestResponse.LABEL:
+					case NewQuery.LABEL:
+					case StopQuery.LABEL:
+						System.out.println("Recieved message " + message.getMethod());
+						break;
+
 					case ControllerBootstrapMessage.LABEL:
 						System.out.println("Bootstrap message found!");
 						ControllerBootstrapMessage bootstrap = (ControllerBootstrapMessage) message;

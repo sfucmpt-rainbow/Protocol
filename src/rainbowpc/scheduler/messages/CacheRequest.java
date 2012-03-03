@@ -6,7 +6,7 @@ package rainbowpc.scheduler.messages;
  * cache
  */
 public class CacheRequest extends SchedulerMessage{
-	public static String LABEL = "cacheRequest";
+	public static final String LABEL = "cacheRequest";
 	private int cacheSize;
 	public CacheRequest(String id, int cacheSize) {
 		super(LABEL, id);

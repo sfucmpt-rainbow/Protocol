@@ -5,7 +5,7 @@ package rainbowpc.controller.messages;
  * After a controller requests a partition to cache the scheduler responds with a partition
  */
 public class CacheRequestResponse extends ControllerMessage{
-	public static String LABEL = "cacheRequestResponse";
+	public static final String LABEL = "cacheRequestResponse";
 	
 	private int stringLength;
 	private long startBlockNumber;

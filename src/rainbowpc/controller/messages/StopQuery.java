@@ -8,7 +8,7 @@ package rainbowpc.controller.messages;
  * Occurs when query is abandoned, space is exhausted or a match is found
  */
 public class StopQuery extends ControllerMessage{
-	public static String LABEL = "stopQuery";
+	public static final String LABEL = "stopQuery";
 	
 	/*
 	 * Hex encoded for maximum cross platform/language compatability and also 

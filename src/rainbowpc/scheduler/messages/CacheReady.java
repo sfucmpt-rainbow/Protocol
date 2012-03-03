@@ -10,7 +10,7 @@ package rainbowpc.scheduler.messages;
  */
 public class CacheReady extends SchedulerMessage {
 
-	public static String LABEL = "cacheReady";
+	public static final String LABEL = "cacheReady";
 	private int stringLength;
 	private long startBlockNumber;
 	private long endBlockNumber;

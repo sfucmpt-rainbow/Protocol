@@ -7,7 +7,7 @@ package rainbowpc.scheduler.messages;
  * Also if it lost its cache in some way it should also release it
  */
 public class CacheRelease extends SchedulerMessage {
-	public static String LABEL = "cacheRelease";
+	public static final String LABEL = "cacheRelease";
 	
 	private int stringLength;
 	private long startBlockNumber;
