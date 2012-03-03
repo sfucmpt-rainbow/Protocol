@@ -46,12 +46,12 @@ public class ControllerServer extends Thread {
 						break;
 					case WorkBlockSetup.LABEL:
 						WorkBlockSetup workBlock = (WorkBlockSetup) message;
-						System.out.println("Got work block " + workBlock.getBlockSize());
+						System.out.println("Got work block " + workBlock.getStartBlockNumber());
 						// Pretend we are doing work
 						Thread.sleep(5000);
 						System.out.println("Work block complete");
 						try {
-							protocol.sendMessage(new WorkBlockComplete(protocol.getId(), workBlock.getBlockSize()));
+							protocol.sendMessage(new WorkBlockComplete(protocol.getId(), workBlock));
 						} catch (IOException e) {
 							e.printStackTrace();
 							System.out.println("Could not send work block complete message");

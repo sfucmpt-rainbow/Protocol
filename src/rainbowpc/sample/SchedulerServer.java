@@ -73,7 +73,7 @@ public class SchedulerServer extends Thread {
 						System.out.println("There is a new controller " + message.getID());
 						System.out.println("Sending random work packet");
 						try {
-							message.getSchedulerProtocolet().sendMessage(new WorkBlockSetup(12345));
+							message.getSchedulerProtocolet().sendMessage(new WorkBlockSetup(0,0,0));
 						} catch (IOException e) {
 							e.printStackTrace();
 							System.out.println("Could not send a work block to controller " + message.getID());
