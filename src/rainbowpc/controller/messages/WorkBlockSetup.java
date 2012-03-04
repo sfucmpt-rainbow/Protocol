@@ -2,22 +2,27 @@ package rainbowpc.controller.messages;
 
 public class WorkBlockSetup extends ControllerMessage {
 	public static final String LABEL = "workBlockSetup";
-	private int blockSize;
+	private int stringLength;
+	private long startBlockNumber;
+	private long endBlockNumber;
 
-	public WorkBlockSetup(int blockSize) {
+	public WorkBlockSetup(int stringLength, long startBlockNumber, long endBlockNumber) {
 		super(LABEL);
-		this.blockSize = blockSize;
+		this.stringLength = stringLength;
+		this.startBlockNumber = startBlockNumber;
+		this.endBlockNumber = endBlockNumber;
 	}
 
-	public boolean acceptableBlockSize() {
-		return getBlockSize() > 0;
+	public long getEndBlockNumber() {
+		return endBlockNumber;
 	}
 
-	public int getBlockSize() {
-		return blockSize;
+	public long getStartBlockNumber() {
+		return startBlockNumber;
 	}
 
-	public int setBlockSize() {
-		return blockSize;
+	public int getStringLength() {
+		return stringLength;
 	}
+
 }
