@@ -52,6 +52,7 @@ public abstract class Protocol implements Runnable {
 	protected static final Gson translator = new Gson(); 
 
 	private ExecutorService mailerExecutor = Executors.newSingleThreadExecutor();
+	private Thread shutdownInterruptThread = null;
 
 	/**
 	  * RPC mapping
@@ -139,6 +140,10 @@ public abstract class Protocol implements Runnable {
 			}
 		}
 		log("Protocol successfully ended");
+	}
+
+	public void setInterruptThread(Thread thread) {
+		shutdownInterruptThread = thread;
 	}
 
 	private void receiveMessage() throws IOException, SocketTimeoutException {
@@ -232,6 +237,9 @@ public abstract class Protocol implements Runnable {
 		mailerExecutor.shutdownNow();
 		terminated = true;
 		shutdownCallable();
+		if (shutdownInterruptThread != null) {
+			shutdownInterruptThread.interrupt();
+		}
 		log("Terminated");
 	}
 	

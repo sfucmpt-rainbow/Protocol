@@ -4,9 +4,11 @@ import rainbowpc.controller.messages.ControllerBootstrapMessage;
 import rainbowpc.controller.ControllerProtocolet;
 import rainbowpc.Protocol;
 import rainbowpc.RpcAction;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ConcurrentHashMap;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -20,6 +22,7 @@ public class ControllerProtocol extends Protocol {
 	private String id;
 	private ExecutorService greeterExecutor;
 	private NodeGreeter greeter;
+	private ConcurrentHashMap<String, ControllerProtocolet> nodes = new ConcurrentHashMap<String, ControllerProtocolet>();
 
 	public String getId() {
 		return id;
@@ -69,6 +72,10 @@ public class ControllerProtocol extends Protocol {
 		log("Shutting down greeter...");
 		greeter.terminate();
 		greeterExecutor.shutdown();
+		for (Map.Entry<String, ControllerProtocolet> entry : nodes.entrySet()) {
+			entry.getValue().shutdown();
+		}
+		nodes.clear();
 	}
 
 	private class NodeGreeter implements Runnable  {
@@ -84,7 +91,8 @@ public class ControllerProtocol extends Protocol {
 			while (!terminated) {
 				try {
 					Socket socket = greeter.accept();
-					new ControllerProtocolet(socket);
+					ControllerProtocolet handler = new ControllerProtocolet(socket);
+					nodes.put(handler.getId(), handler);
 				}
 				catch (IOException e) {
 				}
