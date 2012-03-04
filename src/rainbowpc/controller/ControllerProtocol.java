@@ -1,6 +1,7 @@
 package rainbowpc.controller;
 
 import rainbowpc.controller.messages.ControllerBootstrapMessage;
+import rainbowpc.controller.ControllerProtocolet;
 import rainbowpc.Protocol;
 import rainbowpc.RpcAction;
 import java.util.TreeMap;
@@ -8,6 +9,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
 import rainbowpc.Message;
 import rainbowpc.controller.messages.WorkBlockSetup;
 
@@ -17,6 +19,7 @@ public class ControllerProtocol extends Protocol {
 	private static final int DEFAULT_LISTEN_PORT = 7002;
 	private String id;
 	private ExecutorService greeterExecutor;
+	private NodeGreeter greeter;
 
 	public String getId() {
 		return id;
@@ -32,8 +35,9 @@ public class ControllerProtocol extends Protocol {
 
 	public ControllerProtocol(String schedulerHost, int schedulerPort, int listenPort) throws IOException {
 		super(schedulerHost, schedulerPort);
+		greeter = new NodeGreeter(listenPort);
 		greeterExecutor = Executors.newSingleThreadExecutor();
-		greeterExecutor.execute(new NodeGreeter(listenPort));
+		greeterExecutor.execute(greeter);
 	}
 
 	@Override
@@ -60,8 +64,15 @@ public class ControllerProtocol extends Protocol {
 		});
 	}
 
-	private class NodeGreeter implements Runnable {
-		private static final SOCKET_WAIT_MILLIS = 1000;
+	@Override
+	protected void shutdownCallable() {
+		log("Shutting down greeter...");
+		greeter.terminate();
+		greeterExecutor.shutdown();
+	}
+
+	private class NodeGreeter implements Runnable  {
+		private static final int SOCKET_WAIT_MILLIS = 1000;
 		private ServerSocket greeter;
 
 		public NodeGreeter(int port) throws IOException {
@@ -72,11 +83,22 @@ public class ControllerProtocol extends Protocol {
 		public void run() {
 			while (!terminated) {
 				try {
-					
+					Socket socket = greeter.accept();
+					new ControllerProtocolet(socket);
+				}
+				catch (IOException e) {
 				}
 			}
+			try {
+				greeter.close();
+			}
+			catch (IOException e) {}
+			log("Greeter terminated");
 		}
 
+		public void terminate() {
+			terminated = true;
+		}
 		
 	}
 }

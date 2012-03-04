@@ -12,15 +12,13 @@ import rainbowpc.node.WorkMessage;
 import rainbowpc.RpcAction;
 
 public class NodeProtocol extends Protocol {
-	private final static int DEFAULT_CONTROL_PORT = 7001;
+	private final static int DEFAULT_CONTROL_PORT = 7002;
 
 	public NodeProtocol(String host) throws IOException, RainbowException {
-		super(host);
-		register();
+		this(host, DEFAULT_CONTROL_PORT);
 	}
 	public NodeProtocol(String host, int port) throws IOException, RainbowException {
-		super(host, port);
-		register();
+		this(new Socket(host, port));
 	}
 	public NodeProtocol(Socket socket) throws IOException, RainbowException {
 		super(socket);
