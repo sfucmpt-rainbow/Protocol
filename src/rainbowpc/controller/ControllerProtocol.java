@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import rainbowpc.Message;
-import rainbowpc.controller.messages.WorkBlockSetup;
+import rainbowpc.controller.messages.*;
 
 public class ControllerProtocol extends Protocol {
 
@@ -63,6 +63,34 @@ public class ControllerProtocol extends Protocol {
 			@Override
 			public void action(String rawJson) {
 				queueMessage(Message.createMessage(rawJson, WorkBlockSetup.class, WorkBlockSetup.LABEL));
+			}
+		});
+		rpcMap.put(CacheRequestResponse.LABEL, new RpcAction() {
+
+			@Override
+			public void action(String rawJson) {
+				queueMessage(Message.createMessage(rawJson, CacheRequestResponse.class, CacheRequestResponse.LABEL));
+			}
+		});
+		rpcMap.put(ControllerBootstrapMessage.LABEL, new RpcAction() {
+
+			@Override
+			public void action(String rawJson) {
+				queueMessage(Message.createMessage(rawJson, ControllerBootstrapMessage.class, ControllerBootstrapMessage.LABEL));
+			}
+		});
+		rpcMap.put(NewQuery.LABEL, new RpcAction() {
+
+			@Override
+			public void action(String rawJson) {
+				queueMessage(Message.createMessage(rawJson, NewQuery.class, NewQuery.LABEL));
+			}
+		});
+		rpcMap.put(StopQuery.LABEL, new RpcAction() {
+
+			@Override
+			public void action(String rawJson) {
+				queueMessage(Message.createMessage(rawJson, StopQuery.class, StopQuery.LABEL));
 			}
 		});
 	}
