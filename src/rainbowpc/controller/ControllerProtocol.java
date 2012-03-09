@@ -119,8 +119,9 @@ public class ControllerProtocol extends Protocol {
 			while (!terminated) {
 				try {
 					Socket socket = greeter.accept();
-					ControllerProtocolet handler = new ControllerProtocolet(socket);
+					ControllerProtocolet handler = new ControllerProtocolet(socket, messageQueue);
 					nodes.put(handler.getId(), handler);
+					new Thread(handler).start();
 				}
 				catch (IOException e) {
 				}
