@@ -7,8 +7,7 @@ import java.util.TreeMap;
 import com.google.gson.JsonElement;
 import rainbowpc.Protocol;
 import rainbowpc.RainbowException;
-import rainbowpc.node.NodeMessage;
-import rainbowpc.node.WorkMessage;
+import rainbowpc.node.messages.*;
 import rainbowpc.RpcAction;
 
 public class NodeProtocol extends Protocol {

@@ -1,4 +1,4 @@
-package rainbowpc.node;
+package rainbowpc.node.messages;
 
 //import rainbowpc.protocols.node.NodeMessage;
 
