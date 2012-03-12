@@ -6,6 +6,7 @@ import rainbowpc.RainbowException;
 import rainbowpc.Message;
 import rainbowpc.RpcAction;
 import rainbowpc.controller.messages.NewNodeMessage;
+import rainbowpc.controller.messages.NodeDisconnectMessage;
 import rainbowpc.node.messages.*;
 import java.net.Socket;
 import java.io.IOException;
@@ -34,13 +35,20 @@ public class ControllerProtocolet extends Protocol implements Protocolet {
 			public void action(String rawJson) {
 				NodeRegister nodeInfo = 
 					Message.createMessage(rawJson, NodeRegister.class, NodeRegister.LABEL);
-				queueMessage(new NewNodeMessage(id, nodeInfo.getCoreCount()));
+				queueMessage(new NewNodeMessage(id, nodeInfo.getCoreCount(), ControllerProtocolet.this));
 			}
 		});
+
+		rpcMap.put(WorkMessage.LABEL, new RpcAction() {
+			public void action(String rawJson) {
+				queueMessage(Message.createMessage(rawJson, WorkMessage.class, WorkMessage.LABEL));
+			}
+		});	
 	}
 
 	@Override
 	protected void shutdownCallable() {
+		queueMessage(new NodeDisconnectMessage(id));
 	}
 
 	public String getId() {

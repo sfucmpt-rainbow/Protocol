@@ -9,6 +9,7 @@ import rainbowpc.Protocol;
 import rainbowpc.RainbowException;
 import rainbowpc.node.messages.*;
 import rainbowpc.RpcAction;
+import rainbowpc.Message;
 
 public class NodeProtocol extends Protocol {
 	private final static int DEFAULT_CONTROL_PORT = 7002;
@@ -26,14 +27,9 @@ public class NodeProtocol extends Protocol {
 
 	protected void initRpcMap() {
 		rpcMap = new TreeMap<String, RpcAction>();
-		rpcMap.put("workOrder", new RpcAction() {
-			public void action(String jsonRaw) {
-				queueMessage(translator.fromJson(jsonRaw, WorkMessage.class));
-			}
-		});
-		rpcMap.put("bootstrap", new RpcAction() {
-			public void action(String jsonRaw) {
-				queueMessage(translator.fromJson(jsonRaw, BootstrapMessage.class));
+		rpcMap.put(WorkMessage.LABEL, new RpcAction() {
+			public void action(String rawJson) {
+				queueMessage(Message.createMessage(rawJson, WorkMessage.class, WorkMessage.LABEL));
 			}
 		});
 	}
