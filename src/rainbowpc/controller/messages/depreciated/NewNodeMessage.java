@@ -1,6 +1,12 @@
-package rainbowpc.controller.messages;
+/*
+ * 
+ * Class to be removed -- Depreciated
+ * 
+ */
+package rainbowpc.controller.messages.depreciated;
 
 import rainbowpc.controller.ControllerProtocolet;
+import rainbowpc.controller.messages.ControllerMessage;
 
 public class NewNodeMessage extends ControllerMessage {
 	public static final String LABEL = "new_node";

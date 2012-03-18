@@ -17,9 +17,11 @@ public class QueryFound extends SchedulerMessage{
 	// SHA1 or MD5
 	private String hashMethod;
 	private String plaintext;
-	public QueryFound(String id, NewQuery query, String plaintext) {
+	private int queryID;
+	public QueryFound(String id, int queryID, NewQuery query, String plaintext) {
 		super(LABEL, id);
 		this.query = query.getQuery();
+		this.queryID = queryID;
 		this.hashMethod = query.getHashMethod();
 		this.plaintext = plaintext;
 	}
@@ -34,6 +36,10 @@ public class QueryFound extends SchedulerMessage{
 
 	public String getQuery() {
 		return query;
+	}
+
+	public int getQueryID() {
+		return queryID;
 	}
 	
 }
