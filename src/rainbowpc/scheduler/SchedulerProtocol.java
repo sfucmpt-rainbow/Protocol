@@ -46,8 +46,6 @@ public class SchedulerProtocol extends Protocol {
 		//rpcMap = new TreeMap<String, RpcAction>();
 	}
 
-	
-
 	@Override
 	public void run() {
 		while (!terminated) {
@@ -56,20 +54,19 @@ public class SchedulerProtocol extends Protocol {
 				log("Accepted new client");
 				SchedulerProtocolet handler = new SchedulerProtocolet(socket, messageQueue, this);
 				handlers.put(handler.getId(), handler);  // blargh, java...				
-				/* Internal message to inform something listening on the queue that a new
-				 * controller has connected
-				 * Must be done here because a call to getControllerHandle should not return null
-				 * and adding this to the queue could cause it to call immediately afterwards
+				/*
+				 * Internal message to inform something listening on the queue
+				 * that a new controller has connected Must be done here because
+				 * a call to getControllerHandle should not return null and
+				 * adding this to the queue could cause it to call immediately
+				 * afterwards
 				 */
 				messageQueue.add(new NewControllerMessage(handler));
 				new Thread(handler).start();
-			} 
-			catch (SocketTimeoutException e) {
-			} 
-			catch (SocketException e) {
+			} catch (SocketTimeoutException e) {
+			} catch (SocketException e) {
 				shutdown();
-			} 
-			catch (IOException e) {
+			} catch (IOException e) {
 				e.printStackTrace();
 				shutdown();
 			}
@@ -81,9 +78,11 @@ public class SchedulerProtocol extends Protocol {
 		exited = true;
 		log("Protocol succesfully ended");
 	}
-	public Protocolet getControllerHandle(String id){
+
+	public Protocolet getControllerHandle(String id) {
 		return handlers.get(id);
 	}
+
 	public Protocolet removeControllerHandle(String id) {
 		return handlers.remove(id);
 	}
@@ -98,8 +97,7 @@ public class SchedulerProtocol extends Protocol {
 		log("Shutting down...");
 		try {
 			greeter.close();
-		} 
-		catch (IOException e) {
+		} catch (IOException e) {
 		}
 		terminated = true;
 		log("Terminated");
