@@ -18,10 +18,10 @@ public class QueryFound extends SchedulerMessage{
 	private String hashMethod;
 	private String plaintext;
 	private int queryID;
-	public QueryFound(String id, int queryID, NewQuery query, String plaintext) {
+	public QueryFound(String id, NewQuery query, String plaintext) {
 		super(LABEL, id);
 		this.query = query.getQuery();
-		this.queryID = queryID;
+		this.queryID = query.getQueryID();
 		this.hashMethod = query.getHashMethod();
 		this.plaintext = plaintext;
 	}
