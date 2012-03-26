@@ -57,7 +57,7 @@ public class ControllerServer extends Thread {
 						Thread.sleep(5000);
 						System.out.println("Work block complete");
 						try {
-							protocol.sendMessage(new WorkBlockComplete(protocol.getId(), workBlock));
+							protocol.sendMessage(new WorkBlockComplete(protocol.getId(), 0, workBlock));
 						} catch (IOException e) {
 							e.printStackTrace();
 							System.out.println("Could not send work block complete message");

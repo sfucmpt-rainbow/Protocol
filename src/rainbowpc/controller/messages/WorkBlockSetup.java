@@ -5,12 +5,13 @@ public class WorkBlockSetup extends ControllerMessage {
 	private int stringLength;
 	private long startBlockNumber;
 	private long endBlockNumber;
-
-	public WorkBlockSetup(int stringLength, long startBlockNumber, long endBlockNumber) {
+	private int queryID;
+	public WorkBlockSetup(int stringLength, long startBlockNumber, long endBlockNumber, int queryID) {
 		super(LABEL);
 		this.stringLength = stringLength;
 		this.startBlockNumber = startBlockNumber;
 		this.endBlockNumber = endBlockNumber;
+		this.queryID = queryID;
 	}
 
 	public long getEndBlockNumber() {
@@ -23,6 +24,10 @@ public class WorkBlockSetup extends ControllerMessage {
 
 	public int getStringLength() {
 		return stringLength;
+	}
+
+	public int getQueryID() {
+		return queryID;
 	}
 
 }

@@ -17,12 +17,13 @@ public class WorkBlockComplete extends SchedulerMessage {
 	private int stringLength;
 	private long startBlockNumber;
 	private long endBlockNumber;
-
-	public WorkBlockComplete(String id, WorkBlockSetup request) {
+	private int queryID;
+	public WorkBlockComplete(String id, int queryID, WorkBlockSetup request) {
 		super(LABEL, id);
 		this.stringLength = request.getStringLength();
 		this.startBlockNumber = request.getStartBlockNumber();
 		this.endBlockNumber = request.getEndBlockNumber();
+		this.queryID = queryID;
 	}
 
 	public long getEndBlockNumber() {
@@ -35,6 +36,10 @@ public class WorkBlockComplete extends SchedulerMessage {
 
 	public int getStringLength() {
 		return stringLength;
+	}
+
+	public int getQueryID() {
+		return queryID;
 	}
 	
 }
