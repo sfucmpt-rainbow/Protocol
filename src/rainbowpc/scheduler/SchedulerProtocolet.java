@@ -5,15 +5,12 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.TreeMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Logger;
 import rainbowpc.Message;
 import rainbowpc.Protocol;
 import rainbowpc.RpcAction;
 import rainbowpc.controller.messages.ControllerBootstrapMessage;
-import rainbowpc.scheduler.messages.CacheReady;
-import rainbowpc.scheduler.messages.CacheRelease;
-import rainbowpc.scheduler.messages.CacheRequest;
-import rainbowpc.scheduler.messages.QueryFound;
-import rainbowpc.scheduler.messages.WorkBlockComplete;
+import rainbowpc.scheduler.messages.*;
 
 public class SchedulerProtocolet extends Protocol implements Protocol.Protocolet {
 
@@ -88,6 +85,7 @@ public class SchedulerProtocolet extends Protocol implements Protocol.Protocolet
 
 	@Override
 	protected void shutdownCallable() {
+		sharedQueue.add(new ControllerDisconnect(this));
 		schedulerProtocol.removeControllerHandle(this.id);
 	}
 
