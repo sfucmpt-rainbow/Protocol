@@ -1,6 +1,5 @@
 package rainbowpc.scheduler;
 
-import rainbowpc.scheduler.messages.SchedulerMessage;
 import rainbowpc.Protocol;
 import rainbowpc.Protocol.Protocolet;
 import rainbowpc.Message;
@@ -10,7 +9,6 @@ import java.net.ServerSocket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.TreeMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import rainbowpc.scheduler.messages.NewControllerMessage;
 
 public class SchedulerProtocol extends Protocol {
