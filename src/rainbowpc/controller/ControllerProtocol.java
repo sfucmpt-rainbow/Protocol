@@ -13,21 +13,23 @@ public class ControllerProtocol extends Protocol {
 	private static final int DEFAULT_SCHEDULER_PORT = 7001;
 	private static final int DEFAULT_LISTEN_PORT = 7002;
 	private String id;
+	Thread subscriber;
 
 	public String getId() {
 		return id;
 	}
 
-	public ControllerProtocol(String schedulerHost) throws IOException {
-		this(schedulerHost, DEFAULT_SCHEDULER_PORT);
+	public ControllerProtocol(String schedulerHost, Thread subscriber) throws IOException {
+		this(schedulerHost, DEFAULT_SCHEDULER_PORT, subscriber);
 	}
 
-	public ControllerProtocol(String schedulerHost, int schedulerPort) throws IOException {
-		this(schedulerHost, schedulerPort, DEFAULT_LISTEN_PORT);
+	public ControllerProtocol(String schedulerHost, int schedulerPort, Thread subscriber) throws IOException {
+		this(schedulerHost, schedulerPort, DEFAULT_LISTEN_PORT, subscriber);
 	}
 
-	public ControllerProtocol(String schedulerHost, int schedulerPort, int listenPort) throws IOException {
+	public ControllerProtocol(String schedulerHost, int schedulerPort, int listenPort, Thread subscriber) throws IOException {
 		super(schedulerHost, schedulerPort);
+		this.subscriber = subscriber;
 	}
 
 	@Override
@@ -77,7 +79,9 @@ public class ControllerProtocol extends Protocol {
 
 			@Override
 			public void action(String rawJson) {
+				messageQueue.clear();			
 				queueMessage(Message.createMessage(rawJson, StopQuery.class, StopQuery.LABEL));
+				subscriber.interrupt();
 			}
 		});
 	}
