@@ -89,5 +89,6 @@ public class ControllerProtocol extends Protocol {
 	@Override
 	protected void shutdownCallable() {
 		log("Shutting down greeter...");
+		subscriber.interrupt();
 	}
 }
