@@ -10,6 +10,7 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.TreeMap;
 import rainbowpc.scheduler.messages.NewControllerMessage;
+import rainbowpc.scheduler.messages.SchedulerMessage;
 
 public class SchedulerProtocol extends Protocol {
 
@@ -76,7 +77,9 @@ public class SchedulerProtocol extends Protocol {
 		exited = true;
 		log("Protocol succesfully ended");
 	}
-
+	public void addMessage(SchedulerMessage message){
+		messageQueue.add(message);
+	}
 	public Protocolet getControllerHandle(String id) {
 		return handlers.get(id);
 	}
