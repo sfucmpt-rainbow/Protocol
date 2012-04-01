@@ -185,6 +185,14 @@ public abstract class Protocol implements Runnable {
 		outboundQueue.offer(msg);
 	}
 
+	public void handledSendMessage(Message msg) { 
+		try {
+			sendMessage(msg);
+		} catch (IOException e) {
+			this.shutdown();
+		}
+	}
+
 	public Message getMessage() throws InterruptedException{
 		return messageQueue.take();
 	}
@@ -287,6 +295,8 @@ public abstract class Protocol implements Runnable {
 		public int queueSize();
 		
 		public String getId();
+
+		public void synchronize();
 		
 		public String toString();
 	}

@@ -6,6 +6,7 @@ import rainbowpc.RpcAction;
 import java.util.TreeMap;
 import java.io.IOException;
 import rainbowpc.Message;
+import rainbowpc.SynchronizeMessage;
 import rainbowpc.controller.messages.*;
 
 public class ControllerProtocol extends Protocol {
@@ -84,10 +85,19 @@ public class ControllerProtocol extends Protocol {
 				subscriber.interrupt();
 			}
 		});
+	
+		rpcMap.put(SynchronizeMessage.LABEL, new RpcAction() {
+			// do nothing return, notify convergence acknowledged
+			@Override
+			public void action(String rawJson) {
+				handledSendMessage(Message.createMessage(rawJson, SynchronizeMessage.class, SynchronizeMessage.LABEL));
+			}
+		});
 	}
 
 	@Override
 	protected void shutdownCallable() {
 		log("Shutting down greeter...");
+		subscriber.interrupt();
 	}
 }

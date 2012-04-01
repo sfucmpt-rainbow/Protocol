@@ -5,16 +5,22 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.TreeMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import rainbowpc.Message;
 import rainbowpc.Protocol;
 import rainbowpc.RpcAction;
 import rainbowpc.controller.messages.ControllerBootstrapMessage;
 import rainbowpc.scheduler.messages.*;
+import rainbowpc.SynchronizeMessage;
 
 public class SchedulerProtocolet extends Protocol implements Protocol.Protocolet {
 
 	String id;
+
+	private int syncTokens = 0;
+	private int waitingToken;
+	private AtomicBoolean waitingSync = new AtomicBoolean(false);
 	/*
 	 * Fields are unused and coverup parent fields Should be removed private
 	 * Socket socket; private BufferedReader instream; private PrintWriter
@@ -40,6 +46,14 @@ public class SchedulerProtocolet extends Protocol implements Protocol.Protocolet
 		log("Bootstrap message sent");
 	}
 
+	private void addToQueue(Message message) {
+		if (!waitingSync.get()) {
+			sharedQueue.add(message);
+		} else {
+			warn("Message dropped waiting for state convergence");
+		}
+	}
+
 	@Override
 	protected void initRpcMap() {
 		rpcMap = new TreeMap<String, RpcAction>();
@@ -50,35 +64,41 @@ public class SchedulerProtocolet extends Protocol implements Protocol.Protocolet
 
 			@Override
 			public void action(String jsonRaw) {
-				sharedQueue.add(SchedulerMessage.createSchedulerMessage(jsonRaw, CacheReady.class, CacheReady.LABEL, instance));
+				addToQueue(SchedulerMessage.createSchedulerMessage(jsonRaw, CacheReady.class, CacheReady.LABEL, instance));
 			}
 		});
 		rpcMap.put(CacheRelease.LABEL, new RpcAction() {
 
 			@Override
 			public void action(String jsonRaw) {
-				sharedQueue.add(SchedulerMessage.createSchedulerMessage(jsonRaw, CacheRelease.class, CacheRelease.LABEL, instance));
+				addToQueue(SchedulerMessage.createSchedulerMessage(jsonRaw, CacheRelease.class, CacheRelease.LABEL, instance));
 			}
 		});
 		rpcMap.put(CacheRequest.LABEL, new RpcAction() {
 
 			@Override
 			public void action(String jsonRaw) {
-				sharedQueue.add(SchedulerMessage.createSchedulerMessage(jsonRaw, CacheRequest.class, CacheRequest.LABEL, instance));
+				addToQueue(SchedulerMessage.createSchedulerMessage(jsonRaw, CacheRequest.class, CacheRequest.LABEL, instance));
 			}
 		});
 		rpcMap.put(QueryFound.LABEL, new RpcAction() {
 
 			@Override
 			public void action(String jsonRaw) {
-				sharedQueue.add(SchedulerMessage.createSchedulerMessage(jsonRaw, QueryFound.class, QueryFound.LABEL, instance));
+				addToQueue(SchedulerMessage.createSchedulerMessage(jsonRaw, QueryFound.class, QueryFound.LABEL, instance));
 			}
 		});
 		rpcMap.put(WorkBlockComplete.LABEL, new RpcAction() {
 
 			@Override
 			public void action(String jsonRaw) {
-				sharedQueue.add(SchedulerMessage.createSchedulerMessage(jsonRaw, WorkBlockComplete.class, WorkBlockComplete.LABEL, instance));
+				addToQueue(SchedulerMessage.createSchedulerMessage(jsonRaw, WorkBlockComplete.class, WorkBlockComplete.LABEL, instance));
+			}
+		});
+		rpcMap.put(SynchronizeMessage.LABEL, new RpcAction() {
+			@Override
+			public void action(String jsonRaw) {
+				unwaitSync(Message.createMessage(jsonRaw, SynchronizeMessage.class, SynchronizeMessage.LABEL));
 			}
 		});
 	}
@@ -129,6 +149,24 @@ public class SchedulerProtocolet extends Protocol implements Protocol.Protocolet
 
 	private String generateIdBySocket(Socket socket) {
 		return "controller-" + socket.getInetAddress() + ":" + socket.getPort();
+	}
+	
+	@Override
+	public synchronized void synchronize() {
+		int token = syncTokens++;
+		waitingToken = token;
+		waitingSync.set(true);
+		log("Waiting for state convergence");
+		handledSendMessage(new SynchronizeMessage(token));
+	}
+
+	private synchronized void unwaitSync(SynchronizeMessage sync) {
+		if (sync.getId() == waitingToken) {
+			waitingSync.set(false);
+			log("Synchronized state achieved!");
+		} else {
+			warn("Outdated token received but ignored");
+		}
 	}
 
 	public String toString() {
